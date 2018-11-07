@@ -26,7 +26,7 @@ export class Future<T> {
 }
 
 export async function* observableToAsyncIterable<T>(observable: Observable<T>) {
-  let next = new Future();
+  let next = new Future<T>();
   let done = false;
   const subscription = observable.subscribe(
     v => {
@@ -42,7 +42,7 @@ export async function* observableToAsyncIterable<T>(observable: Observable<T>) {
   try {
     while (!done) {
       const value = await next.promise;
-      next = new Future();
+      next = new Future<T>();
       yield value;
     }
   } catch (e) {
