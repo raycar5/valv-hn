@@ -52,5 +52,9 @@ module.exports = {
   },
   plugins: [new BundleAnalyzerPlugin()],
   devtool: "cheap-module-source-map",
-  devServer: {}
+  devServer: {
+    historyApiFallback: {
+      index: "index.html"
+    }
+  }
 };

@@ -1,85 +1,66 @@
-import { render, html } from "lit-html";
-import { BehaviorSubject, Subject, Observable } from "rxjs";
-import { mapTo, merge, scan } from "rxjs/operators";
-import { asyncr, eventToSubject, BlocRepo, Widget } from "./lit-rx";
-import "@polymer/paper-button/paper-button.js";
-
-class CounterBloc {
-  public readonly incrementSubject = new Subject<any>();
-  public readonly decrementSubject = new Subject<any>();
-  private readonly numberSubject: Subject<number>;
-  public readonly countObservable: Observable<number>;
-
-  constructor(initialValue: number = 0) {
-    this.numberSubject = new BehaviorSubject(initialValue);
-    this.incrementSubject
-      .pipe(
-        mapTo(1),
-        merge(this.decrementSubject.pipe(mapTo(-1))),
-        scan((acc, v) => acc + v, initialValue)
-      )
-      .subscribe(this.numberSubject);
-    this.countObservable = this.numberSubject;
-  }
-}
-
-const IncrementButtonWidget = Widget(
-  blocs =>
-    html`
-      <paper-button
-        raised
-        @click="${eventToSubject(blocs.of(CounterBloc).incrementSubject)}"
-      >
-        Increment
-      </paper-button>
-    `
-);
-const DecrementButtonWidget = Widget(
-  blocs =>
-    html`
-      <custom-style>
-        <style>
-          paper-button.custom {
-            background-color: #3333ff;
-            font-family: Roboto, sans-serif;
-          }
-        </style>
-      </custom-style>
-      <paper-button
-        raised
-        class="custom"
-        @click="${eventToSubject(blocs.of(CounterBloc).decrementSubject)}"
-      >
-        Decrement
-      </paper-button>
-    `
-);
-
-const DisplayWidget = Widget(
-  blocs =>
-    html`
-      &nbsp;
-      ${
-        asyncr(blocs.of(CounterBloc).countObservable, v =>
-          v > 10
-            ? html`
-                <b>${v}</b>
-              `
-            : html`
-                <i>${v}</i>
-              `
-        )
-      }
-    `
-);
+import { render, html, TemplateResult } from "lit-html";
+import {
+  defer,
+  BehaviorSubject,
+  Subject,
+  Observable,
+  PartialObserver,
+  Subscription
+} from "rxjs";
+import { map, flatMap, mapTo, merge, scan, take } from "rxjs/operators";
+import {
+  asynco,
+  eventToObserver,
+  BlocRepo,
+  Widget,
+  RouterBloc,
+  RouterWidget,
+  just,
+  animate,
+  PageFactoryMap,
+  PaginatedRouteProps,
+  PaginatedRouteMatcher,
+  makeRedirecter
+} from "./lit-rx";
+import { HNHeader } from "./components/HNHeader";
+import { HNBloc } from "./blocs/HN";
+import { Top, Ask, Jobs, New, Show } from "./pages/HNFeedPages";
+import { HNStoryPage } from "./pages/HNStoryPage";
 
 const blocs = new BlocRepo();
-blocs.register(CounterBloc);
+blocs.register(RouterBloc);
+blocs.register(HNBloc);
 
-render(
-  html`
-    ${IncrementButtonWidget(blocs)} ${DisplayWidget(blocs)}
-    ${DecrementButtonWidget(blocs)}
-  `,
-  document.getElementById("body")
-);
+const Home = makeRedirecter("/top");
+
+const routes: PageFactoryMap = {
+  "/top": Top,
+  "/new": New,
+  "/ask": Ask,
+  "/show": Show,
+  "/jobs": Jobs,
+  "/story": HNStoryPage
+};
+
+function generateDefaultPages(blocs: BlocRepo, routes: PageFactoryMap) {
+  const resp: { [path: string]: TemplateResult } = {};
+  for (const key in routes) {
+    resp[key] = makeRedirecter(key + "/1")(blocs);
+  }
+  return resp;
+}
+
+const App = html`
+  ${
+    RouterWidget(blocs, {
+      routeObservable: blocs.of(RouterBloc).routeObservable,
+      matchers: [PaginatedRouteMatcher(blocs, routes)],
+      routes: {
+        "/": Home(blocs),
+        ...generateDefaultPages(blocs, routes)
+      }
+    })
+  }
+`;
+
+render(App, document.getElementById("body"));
