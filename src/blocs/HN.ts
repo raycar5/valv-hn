@@ -5,7 +5,7 @@ import {
   from,
   Subject
 } from "rxjs";
-import { map, switchMap } from "rxjs/operators";
+import { map, switchMap, startWith, mapTo } from "rxjs/operators";
 
 export interface HNStory {
   id: number;
@@ -114,7 +114,7 @@ export class HNBloc {
                   loadStatus: LoadStatus.ERROR
                 });
               })
-          )
+          ).pipe(startWith({ loadStatus: LoadStatus.LOADING }))
         )
       )
       .subscribe(storySubject);

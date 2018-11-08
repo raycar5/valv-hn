@@ -12,12 +12,20 @@ export const StoryListItem = Widget(
     const router = blocs.of(RouterBloc);
     return html`
       <div
-        @click="${() => window.open(url)}"
+        @click="${
+          () =>
+            domain ? window.open(url) : router.nextObserver.next(`/story/${id}`)
+        }"
         style="display:flex; flex-direction:column; cursor: pointer;"
       >
         <div style="font-size:1.3rem">
-          <span style="color:#000">${title}</span>
-          <span style="color:#666">(${domain})</span>
+          <span style="color:#000">${title}</span> ${
+            domain
+              ? html`
+                  <span style="color:#666">(${domain})</span>
+                `
+              : ""
+          }
         </div>
         <div style="font-size:.75rem; color:#666">
           ${points} points by <a>${user}</a> ${time_ago} |

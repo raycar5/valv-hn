@@ -6,6 +6,7 @@ import { HNBloc, LoadStatus } from "../blocs/HN";
 import { HNComment } from "../components/HNComment";
 import { repeat } from "lit-html/directives/repeat";
 import { defer } from "rxjs";
+import { unsafeHTML } from "lit-html/directives/unsafe-html";
 
 export const HNStoryPage = Widget((blocs, { page }: PaginatedRouteProps) => {
   const hnbloc = blocs.of(HNBloc);
@@ -43,8 +44,14 @@ export const HNStoryPage = Widget((blocs, { page }: PaginatedRouteProps) => {
               return html`
                 <div style="margin-bottom: 20px">
                   ${StoryListItem(blocs, storyMessage.story)}
+                  ${
+                    storyMessage.story.content
+                      ? unsafeHTML(storyMessage.story.content)
+                      : ""
+                  }
                 </div>
                 <hr />
+
                 ${
                   repeat(
                     storyMessage.story.comments,

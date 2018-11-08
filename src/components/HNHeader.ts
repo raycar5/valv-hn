@@ -3,6 +3,7 @@ import { PartialObserver, Observable, Subject } from "rxjs";
 import "@polymer/paper-button/paper-button.js";
 import { asynco, eventToObserver, Widget, RouterBloc } from "../lit-rx";
 import { mapTo, map } from "rxjs/operators";
+import { LitSpin } from "./LitSpin";
 
 interface HNButtonProps {
   route: string;
@@ -36,9 +37,7 @@ const HNButton = Widget((blocs, { route, name }: HNButtonProps) => {
 export const HNHeader = Widget(blocs => {
   return html`
     <div style="background-color:#283593">
-      <span style="margin:20px; font-size: 20dp; color:#fff">lit🔥rx</span> ${
-        HNButton(blocs, { route: "/top", name: "Top" })
-      }
+      ${LitSpin(blocs)} ${HNButton(blocs, { route: "/top", name: "Top" })}
       ${HNButton(blocs, { route: "/new", name: "New" })}
       ${HNButton(blocs, { route: "/ask", name: "Ask" })}
       ${HNButton(blocs, { route: "/show", name: "Show" })}
