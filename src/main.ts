@@ -16,7 +16,7 @@ import {
   RouterBloc,
   RouterWidget,
   just,
-  animate,
+  interact,
   PageFactoryMap,
   PaginatedRouteProps,
   PaginatedRouteMatcher,
@@ -26,10 +26,13 @@ import { HNHeader } from "./components/HNHeader";
 import { HNBloc } from "./blocs/HN";
 import { Top, Ask, Jobs, New, Show } from "./pages/HNFeedPages";
 import { HNStoryPage } from "./pages/HNStoryPage";
+import { SecretCodeBloc } from "./blocs/SecretCodeBloc";
+import { SecretDemoPage } from "./pages/SecretDemoPage";
 
 const blocs = new BlocRepo();
 blocs.register(RouterBloc);
 blocs.register(HNBloc);
+blocs.register(SecretCodeBloc);
 
 const Home = makeRedirecter("/top");
 
@@ -51,12 +54,14 @@ function generateDefaultPages(blocs: BlocRepo, routes: PageFactoryMap) {
 }
 
 const App = html`
+  ${HNHeader(blocs)}
   ${
     RouterWidget(blocs, {
       routeObservable: blocs.of(RouterBloc).routeObservable,
       matchers: [PaginatedRouteMatcher(blocs, routes)],
       routes: {
         "/": Home(blocs),
+        "/secret": SecretDemoPage(blocs),
         ...generateDefaultPages(blocs, routes)
       }
     })

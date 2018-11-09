@@ -1,13 +1,7 @@
 import { html } from "lit-html";
 import { repeat } from "lit-html/directives/repeat";
 import { PartialObserver, Observable, Subject } from "rxjs";
-import {
-  asynco,
-  eventToObserver,
-  Widget,
-  RouterBloc,
-  animate
-} from "../lit-rx";
+import { asynco, eventToObserver, Widget, RouterBloc } from "../lit-rx";
 import { mapTo, map, timeInterval } from "rxjs/operators";
 import { HNStory, HNStoryPage } from "../blocs/HN";
 import { StoryListItem } from "./StoryListItem";

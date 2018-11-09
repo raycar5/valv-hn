@@ -1,4 +1,4 @@
-import { Widget, animate } from "../lit-rx";
+import { Widget, interact } from "../lit-rx";
 import { html } from "lit-html";
 import {
   PlayPauseAnimationAction,
@@ -12,6 +12,7 @@ import { flatMap, take } from "rxjs/operators";
 export const SpinAnimationDemo = Widget(blocs => {
   const b = new PlayPauseAnimationBloc();
   const s = new Subject<any>();
+  let animation: Animation;
 
   s.pipe(
     flatMap(async _ => {
@@ -25,26 +26,38 @@ export const SpinAnimationDemo = Widget(blocs => {
   return html`
     <div style="display: flex; justify-content: center; margin: 20px">
       ${
-        animate(
+        interact(
           html`
             <div style="display:inline-block;">Bye</div>
           `,
           {
-            keyframes: [
-              {
-                transform: "rotate(0)",
-                color: "#000"
-              },
-              { color: "#431236", offset: 0.3 },
-              {
-                transform: "rotate(360deg)",
-                color: "#000"
+            next({ element, value }) {
+              if (!animation) {
+                animation = element.animate(
+                  [
+                    {
+                      transform: "rotate(0)"
+                    },
+                    {
+                      transform: "rotate(360deg)"
+                    }
+                  ] as Keyframe[],
+                  {
+                    duration: 600,
+                    iterations: Infinity
+                  }
+                );
+                return;
               }
-            ] as Keyframe[],
-            options: {
-              duration: 3000,
-              iterations: Infinity
-            },
+              if (value == PlayPauseAnimationAction.PAUSE) {
+                animation.pause();
+              } else {
+                animation.play();
+              }
+            }
+          },
+          b.toggleObservable
+          /*
             autoplay: true,
             controlCallback: (action, animation) => {
               return action == PlayPauseAnimationAction.PAUSE
@@ -54,6 +67,7 @@ export const SpinAnimationDemo = Widget(blocs => {
 
             controlObservable: b.toggleObservable
           }
+          */
         )
       }
       ${

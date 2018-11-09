@@ -127,15 +127,16 @@ interface AnimateOptions<T> {
   controlObservable?: Observable<T>;
   controlCallback?: (value: T, animation: Animation) => void;
 }
-export const animate = <T, E>(
+
+//If no observable is provided, the observer will be called once on element creation
+export const interact = <T, E>(
   value: T | TemplateResult,
-  {
-    keyframes,
-    options,
-    autoplay = false,
-    controlObservable,
-    controlCallback
-  }: AnimateOptions<E>
+  observer: PartialObserver<{
+    element: Element;
+    index: number;
+    value?: E;
+  }>,
+  observable?: Observable<E>
 ) =>
   directive(async (part: NodePart) => {
     const itemPart = new NodePart(part.options);
@@ -145,41 +146,16 @@ export const animate = <T, E>(
     itemPart.setValue(value);
     itemPart.commit();
 
-    const animation = ((itemPart.startNode as unknown) as NonDocumentTypeChildNode).nextElementSibling.animate(
-      keyframes,
-      options
-    );
-    if (!autoplay) animation.pause();
-    if (!controlObservable) {
+    const element = ((itemPart.startNode as unknown) as NonDocumentTypeChildNode)
+      .nextElementSibling;
+    if (!observable) {
+      observer.next({ element, index: 0 });
+      if (observer.complete) observer.complete();
       return;
     }
-    let next = new Future<E>();
-    let done = false;
-    const subscription = controlObservable.subscribe(
-      v => {
-        next.resolve(v);
-      },
-      e => {
-        next.reject(e);
-      },
-      () => {
-        done = true;
-      }
-    );
-    try {
-      await new Promise(resolve => setImmediate(resolve));
-
-      while (!done) {
-        let v = await next.promise;
-        if (part.value != value) break;
-        next = new Future<E>();
-        controlCallback(v, animation);
-      }
-    } catch (e) {
-      console.log(e);
-    } finally {
-      subscription.unsubscribe();
-    }
+    observable
+      .pipe(map((value, index) => ({ element, index, value })))
+      .subscribe(observer);
   });
 
 export type IClassConstructor<T> = new () => T;
@@ -305,4 +281,7 @@ export function makeRedirecter(path: string) {
       ${asynco(o)}
     `;
   });
+}
+export function timeout(ms: number) {
+  return new Promise(r => setTimeout(r, ms));
 }

@@ -15,6 +15,7 @@ import { HNHeader } from "../components/HNHeader";
 import { HNBloc, HNFeed } from "../blocs/HN";
 import { Button } from "../components/Button";
 import "@polymer/paper-styles/paper-styles-classes";
+import { paperMaterial } from "../styles";
 
 function makeHNPage(feed: HNFeed) {
   return Widget((blocs, { page }: PaginatedRouteProps) => {
@@ -30,11 +31,7 @@ function makeHNPage(feed: HNFeed) {
     return html`
       <custom-style>
         <style is="custom-style" include="paper-material-styles">
-          .paper-material {
-            padding: 5px;
-            margin: 10px 20%;
-            @apply --shadow-elevation-4dp;
-          }
+          ${paperMaterial}
         </style>
       </custom-style>
       ${
@@ -44,7 +41,6 @@ function makeHNPage(feed: HNFeed) {
           })
         )
       }
-      ${HNHeader(blocs)}
       <div class="paper-material">
         ${
           StoryList(blocs, {

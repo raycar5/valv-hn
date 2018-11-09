@@ -1,9 +1,12 @@
 import { html } from "lit-html";
 import { PartialObserver, Observable, Subject } from "rxjs";
 import "@polymer/paper-button/paper-button.js";
-import { asynco, eventToObserver, Widget, RouterBloc } from "../lit-rx";
+import { asynco, eventToObserver, Widget, RouterBloc, just } from "../lit-rx";
 import { mapTo, map } from "rxjs/operators";
 import { LitSpin } from "./LitSpin";
+import { SecretDemosButton } from "./SecretDemosButton";
+import { Button } from "./Button";
+import { localStorageKey, SecretCodeBloc } from "../blocs/SecretCodeBloc";
 
 interface HNButtonProps {
   route: string;
@@ -42,6 +45,30 @@ export const HNHeader = Widget(blocs => {
       ${HNButton(blocs, { route: "/ask", name: "Ask" })}
       ${HNButton(blocs, { route: "/show", name: "Show" })}
       ${HNButton(blocs, { route: "/jobs", name: "Jobs" })}
+      ${SecretDemosButton(blocs)}
+      ${
+        asynco(blocs.of(SecretCodeBloc).unlockedSubject, unlocked =>
+          unlocked
+            ? html`
+                <div
+                  style="display:inline-flex; position:relative; right:0; justify-content: flex-end"
+                >
+                  ${
+                    Button(blocs, {
+                      textObservable: just("Clear storage"),
+                      eventObserver: {
+                        next() {
+                          localStorage.removeItem(localStorageKey);
+                          window.location.reload();
+                        }
+                      }
+                    })
+                  }
+                </div>
+              `
+            : ""
+        )
+      }
     </div>
   `;
 });
