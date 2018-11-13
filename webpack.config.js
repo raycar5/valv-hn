@@ -1,8 +1,6 @@
 const path = require("path");
-const webpack = require("webpack");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
-const HTMLWebpackPlugin = require("html-webpack-plugin");
 
 const ROOT = path.resolve(__dirname, "src");
 const DESTINATION = path.resolve(__dirname, "dist");
@@ -15,7 +13,9 @@ module.exports = {
   },
 
   output: {
+    publicPath: "/",
     filename: "[name].bundle.js",
+    chunkFilename: "[name].[hash].bundle.js",
     path: DESTINATION
   },
 
@@ -77,12 +77,7 @@ module.exports = {
       }
     ]
   },
-  plugins: [
-    new HTMLWebpackPlugin({
-      favicon: "favicon.ico"
-    })
-    // new BundleAnalyzerPlugin()
-  ],
+  plugins: [new BundleAnalyzerPlugin()],
   devtool: "cheap-module-source-map",
   devServer: {
     publicPath: "/",

@@ -1,6 +1,6 @@
 import { html } from "lit-html";
-import { PartialObserver, Observable, BehaviorSubject } from "rxjs";
-import { asynco, eventToObserver, Widget } from "../lit-rx";
+import { BehaviorSubject } from "rxjs";
+import { awaito, Widget } from "valv";
 import { IHNComment } from "../blocs/HN";
 import { repeat } from "lit-html/directives/repeat";
 import { unsafeHTML } from "lit-html/directives/unsafe-html";
@@ -11,7 +11,7 @@ export interface HNCommentProps {
 
 export const HNComment: Widget<HNCommentProps> = Widget(
   (
-    blocs,
+    context,
     { comment: { id, user, time_ago, content, comments } }: HNCommentProps
   ) => {
     const openSubject = new BehaviorSubject(true);
@@ -19,7 +19,7 @@ export const HNComment: Widget<HNCommentProps> = Widget(
       <div style="font-size: .75rem">
         <div>
           ${
-            asynco(openSubject, open =>
+            awaito(openSubject, open =>
               open
                 ? html`
                     <span
@@ -43,7 +43,7 @@ export const HNComment: Widget<HNCommentProps> = Widget(
       </div>
       <hr />
       ${
-        asynco(openSubject, open =>
+        awaito(openSubject, open =>
           open
             ? html`
                 <div style="margin-inline-start: 20px">
@@ -51,7 +51,7 @@ export const HNComment: Widget<HNCommentProps> = Widget(
                     repeat(
                       comments,
                       comment => comment.id,
-                      comment => HNComment(blocs, { comment })
+                      comment => HNComment(context, { comment })
                     )
                   }
                 </div>

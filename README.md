@@ -1,6 +1,3 @@
-lit-rx
-------------------------------
+# Valv-HN
 
-A small and (hopefully) fast web framework
-
-Yelp hackathon 27 project
+HackerNews viewer demo app built with Valv

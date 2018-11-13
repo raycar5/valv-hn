@@ -1,7 +1,7 @@
 {
-  "name": "lit-ts",
+  "name": "valv-hn",
   "version": "0.0.1",
-  "description": "A small and (hopefully) fast web framework",
+  "description": "HackerNews implemented with the Valv framework",
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --port 9000 --inline --progress --profile --colors --watch --content-base src/ --mode development",
@@ -12,15 +12,14 @@
     "test": "karma start karma.config.js"
   },
   "keywords": [
-    "webpack",
-    "webpack4",
+    "Valv",
+    "HackerNews",
     "typescript"
   ],
   "author": "raycar5",
   "license": "MIT",
   "devDependencies": {
     "@types/jasmine": "2.8.7",
-    "@types/lodash": "^4.14.118",
     "@types/node": "7.0.0",
     "awesome-typescript-loader": "5.2.0",
     "cpx": "^1.5.0",
@@ -44,9 +43,11 @@
   },
   "dependencies": {
     "@polymer/paper-button": "^3.0.1",
-    "lit-html": "^0.12.0",
-    "lodash": "^4.17.11",
+    "@types/lodash-es": "^4.17.1",
+    "lit-html": "^0.13.0",
+    "lodash-es": "^4.17.11",
     "rxjs": "^6.3.3",
+    "valv": "^0.0.3",
     "wired-elements": "^0.8.2"
   }
 }

@@ -1,15 +1,13 @@
 import { html } from "lit-html";
-import { PartialObserver, Observable, Subject } from "rxjs";
-import { asynco, eventToObserver, Widget, RouterBloc } from "../lit-rx";
-import { mapTo, map, timeInterval } from "rxjs/operators";
+import { eventToObserver, Widget, RouterBloc } from "valv";
 import { HNStory } from "../blocs/HN";
 
 export const StoryListItem = Widget(
   (
-    blocs,
+    context,
     { title, comments_count, points, time_ago, url, user, domain, id }: HNStory
   ) => {
-    const router = blocs.of(RouterBloc);
+    const router = context.blocs.of(RouterBloc);
     return html`
       <div
         @click="${

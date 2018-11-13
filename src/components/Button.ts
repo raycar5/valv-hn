@@ -1,18 +1,18 @@
 import { html } from "lit-html";
-import "@polymer/paper-button/paper-button.js";
-import { PartialObserver, Observable } from "rxjs";
-import { asynco, eventToObserver, Widget } from "../lit-rx";
+import { PaperButtonElement } from "@polymer/paper-button/paper-button.js";
+import { Observable, NextObserver } from "rxjs";
+import { awaito, eventToObserver, Widget } from "valv";
 
 export interface ButtonProps {
-  eventObserver: PartialObserver<MouseEvent>;
+  eventObserver: NextObserver<MouseEvent>;
   textObservable: Observable<string>;
 }
 
 export const Button = Widget(
-  (blocs, { eventObserver, textObservable }: ButtonProps) =>
+  (context, { eventObserver, textObservable }: ButtonProps) =>
     html`
       <paper-button raised @click="${eventToObserver(eventObserver)}">
-        ${asynco(textObservable)}
+        ${awaito(textObservable)}
       </paper-button>
     `
 );

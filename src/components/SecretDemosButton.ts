@@ -1,11 +1,4 @@
-import {
-  Widget,
-  interact,
-  just,
-  eventToObserver,
-  RouterBloc,
-  timeout
-} from "../lit-rx";
+import { Widget, interact, RouterBloc, sleep } from "valv";
 import { html } from "lit-html";
 import { Subject, BehaviorSubject } from "rxjs";
 import { SecretCodeBloc } from "../blocs/SecretCodeBloc";
@@ -13,10 +6,7 @@ import {
   mapTo,
   take,
   filter,
-  debounce,
   debounceTime,
-  combineLatest,
-  switchMap,
   flatMap,
   map
 } from "rxjs/operators";
@@ -79,8 +69,8 @@ enum SecretAnimationAction {
   MOVE_BUTTON,
   NONE
 }
-export const SecretDemosButton = Widget(blocs => {
-  const secretbloc = blocs.of(SecretCodeBloc);
+export const SecretDemosButton = Widget(context => {
+  const secretbloc = context.blocs.of(SecretCodeBloc);
 
   let overlay: HTMLDivElement;
   let closedchest: HTMLImageElement;
@@ -156,7 +146,7 @@ export const SecretDemosButton = Widget(blocs => {
               duration: 7300
             }
           ).onfinish = async () => {
-            await timeout(650);
+            await sleep(650);
             animationSubject.next(SecretAnimationAction.OPEN_CHEST);
           };
           closedchest.style.visibility = "visible";
@@ -312,7 +302,7 @@ export const SecretDemosButton = Widget(blocs => {
                   animationSubject.next(SecretAnimationAction.MOVE_BUTTON);
                   secretbloc.unlockedSubject.next(true);
                 } else {
-                  blocs.of(RouterBloc).nextObserver.next("/secret");
+                  context.blocs.of(RouterBloc).nextObserver.next("/secret");
                 }
               }
             }"

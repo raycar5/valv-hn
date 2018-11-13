@@ -1,22 +1,22 @@
-import { Widget, asynco, RouterBloc } from "../lit-rx";
+import { Widget, awaito, RouterBloc } from "valv";
 import { html } from "lit-html";
 import { defer } from "rxjs";
 import { SecretCodeBloc } from "../blocs/SecretCodeBloc";
-import { take, takeLast } from "rxjs/operators";
-import { paperMaterial } from "../styles";
-import "wired-elements";
+import { take } from "rxjs/operators";
+import "wired-checkbox";
+import "wired-card";
 
-export const SecretDemoPage = Widget(blocs => {
+export const SecretDemoPage = Widget(context => {
   return html`
     ${
-      asynco(
+      awaito(
         defer(async () => {
-          const unlocked = await blocs
+          const unlocked = await context.blocs
             .of(SecretCodeBloc)
             .unlockedSubject.pipe(take(1))
             .toPromise();
           if (!unlocked) {
-            blocs.of(RouterBloc).nextObserver.next("/");
+            context.blocs.of(RouterBloc).nextObserver.next("/");
           }
         })
       )

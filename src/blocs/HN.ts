@@ -89,7 +89,7 @@ export class HNBloc {
         switchMap(f =>
           from(
             fetch(
-              `http://node-hnapi.herokuapp.com/${f.feed}?page=${f.page}`
+              `https://node-hnapi.herokuapp.com/${f.feed}?page=${f.page}`
             ).then(async response => ({
               stories: await response.json(),
               pageNumber: f.page
@@ -103,7 +103,7 @@ export class HNBloc {
       .pipe(
         switchMap(f =>
           from(
-            fetch(`http://node-hnapi.herokuapp.com/item/${f}`)
+            fetch(`https://node-hnapi.herokuapp.com/item/${f}`)
               .then(async response => ({
                 story: await response.json(),
                 loadStatus: LoadStatus.LOADED

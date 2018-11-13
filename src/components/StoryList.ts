@@ -1,27 +1,23 @@
 import { html } from "lit-html";
 import { repeat } from "lit-html/directives/repeat";
-import { PartialObserver, Observable, Subject } from "rxjs";
-import { asynco, eventToObserver, Widget, RouterBloc } from "../lit-rx";
-import { mapTo, map, timeInterval } from "rxjs/operators";
-import { HNStory, HNStoryPage } from "../blocs/HN";
+import { Observable } from "rxjs";
+import { awaito, Widget } from "valv";
+import { HNStoryPage } from "../blocs/HN";
 import { StoryListItem } from "./StoryListItem";
-import { Button } from "./Button";
-import { flatMap, take } from "rxjs/operators";
-import { SpinAnimationDemo } from "./SpinAnimationDemo";
 
 interface StoryListProps {
   storyPages: Observable<HNStoryPage>;
 }
-export const StoryList = Widget((blocs, { storyPages }: StoryListProps) => {
+export const StoryList = Widget((context, { storyPages }: StoryListProps) => {
   return html`
     ${
-      asynco(storyPages, storyPage =>
+      awaito(storyPages, storyPage =>
         storyPage.stories.length === 0
           ? html`
               <div
                 style="display: flex; justify-content: center; margin: 20px; align-items:center"
               >
-                ${SpinAnimationDemo(blocs)} looks empty 😕
+                looks empty 😕
               </div>
             `
           : html`
@@ -37,7 +33,7 @@ export const StoryList = Widget((blocs, { storyPages }: StoryListProps) => {
                         <span style="margin:10px; text-decoration:bold;"
                           >${index + 1 + (storyPage.pageNumber - 1) * 30}</span
                         >
-                        ${StoryListItem(blocs, story)}
+                        ${StoryListItem(context, story)}
                       </div>
                       <hr />
                     `

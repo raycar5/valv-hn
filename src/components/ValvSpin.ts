@@ -1,8 +1,8 @@
-import { Widget, interact, eventToObserver } from "../lit-rx";
+import { Widget, interact, eventToObserver } from "valv";
 import { html } from "lit-html";
 import { Subject } from "rxjs";
 
-export const LitSpin = Widget(blocs => {
+export const ValvSpin = Widget(context => {
   const animationSubject = new Subject();
   let animation: Animation;
   return html`
@@ -12,7 +12,7 @@ export const LitSpin = Widget(blocs => {
           <div
             @click="${eventToObserver(animationSubject)}"
             style="margin:20px; font-size: 20dp; color:#fff; display:inline-block"
-            >lit🔥rx</span
+            >| Valv |</span
           >
         `,
         {

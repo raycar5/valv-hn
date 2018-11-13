@@ -1,14 +1,7 @@
 import { html } from "lit-html";
 import { PartialObserver, Observable, Subject, from, defer } from "rxjs";
 import "@polymer/paper-button/paper-button.js";
-import {
-  asynco,
-  eventToObserver,
-  Widget,
-  RouterBloc,
-  PaginatedRouteProps,
-  just
-} from "../lit-rx";
+import { awaito, Widget, RouterBloc, PaginatedRouteProps, just } from "valv";
 import { mapTo, map } from "rxjs/operators";
 import { StoryList } from "../components/StoryList";
 import { HNHeader } from "../components/HNHeader";
@@ -18,9 +11,9 @@ import "@polymer/paper-styles/paper-styles-classes";
 import { paperMaterial } from "../styles";
 
 function makeHNPage(feed: HNFeed) {
-  return Widget((blocs, { page }: PaginatedRouteProps) => {
-    const hnbloc = blocs.of(HNBloc);
-    const router = blocs.of(RouterBloc);
+  return Widget((context, { page }: PaginatedRouteProps<any>) => {
+    const hnbloc = context.blocs.of(HNBloc);
+    const router = context.blocs.of(RouterBloc);
     const next = new Subject();
     const previous = new Subject();
 
@@ -35,7 +28,7 @@ function makeHNPage(feed: HNFeed) {
         </style>
       </custom-style>
       ${
-        asynco(
+        awaito(
           defer(() => {
             hnbloc.feedSelectorObserver.next({ feed, page });
           })
@@ -43,14 +36,14 @@ function makeHNPage(feed: HNFeed) {
       }
       <div class="paper-material">
         ${
-          StoryList(blocs, {
+          StoryList(context, {
             storyPages: hnbloc.storiesObservable
           })
         }
         <div style="display:flex; justify-content: space-between; margin: 10px">
           ${
             page > 1
-              ? Button(blocs, {
+              ? Button(context, {
                   textObservable: just("Previous"),
                   eventObserver: previous
                 })
@@ -59,7 +52,7 @@ function makeHNPage(feed: HNFeed) {
                 `
           }
           ${
-            Button(blocs, {
+            Button(context, {
               textObservable: just("Next"),
               eventObserver: next
             })

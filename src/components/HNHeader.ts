@@ -1,9 +1,9 @@
 import { html } from "lit-html";
-import { PartialObserver, Observable, Subject } from "rxjs";
-import "@polymer/paper-button/paper-button.js";
-import { asynco, eventToObserver, Widget, RouterBloc, just } from "../lit-rx";
+import { Subject } from "rxjs";
+import { PaperButtonElement } from "@polymer/paper-button/paper-button.js";
+import { awaito, eventToObserver, Widget, RouterBloc, just } from "valv";
 import { mapTo, map } from "rxjs/operators";
-import { LitSpin } from "./LitSpin";
+import { ValvSpin } from "./ValvSpin";
 import { SecretDemosButton } from "./SecretDemosButton";
 import { Button } from "./Button";
 import { localStorageKey, SecretCodeBloc } from "../blocs/SecretCodeBloc";
@@ -12,9 +12,9 @@ interface HNButtonProps {
   route: string;
   name: string;
 }
-const HNButton = Widget((blocs, { route, name }: HNButtonProps) => {
+const HNButton = Widget((context, { route, name }: HNButtonProps) => {
   const s = new Subject<string>();
-  const router = blocs.of(RouterBloc);
+  const router = context.blocs.of(RouterBloc);
   s.pipe(mapTo(route)).subscribe(router.nextObserver);
   const yellowButton = html`
     <paper-button style="color: #f5d328" @click="${eventToObserver(s)}"
@@ -29,7 +29,7 @@ const HNButton = Widget((blocs, { route, name }: HNButtonProps) => {
 
   return html`
     ${
-      asynco(
+      awaito(
         router.routeObservable.pipe(
           map(path => (path.includes(route) ? yellowButton : whiteButton))
         )
@@ -37,24 +37,24 @@ const HNButton = Widget((blocs, { route, name }: HNButtonProps) => {
     }
   `;
 });
-export const HNHeader = Widget(blocs => {
+export const HNHeader = Widget(context => {
   return html`
     <div style="background-color:#283593">
-      ${LitSpin(blocs)} ${HNButton(blocs, { route: "/top", name: "Top" })}
-      ${HNButton(blocs, { route: "/new", name: "New" })}
-      ${HNButton(blocs, { route: "/ask", name: "Ask" })}
-      ${HNButton(blocs, { route: "/show", name: "Show" })}
-      ${HNButton(blocs, { route: "/jobs", name: "Jobs" })}
-      ${SecretDemosButton(blocs)}
+      ${ValvSpin(context)} ${HNButton(context, { route: "/top", name: "Top" })}
+      ${HNButton(context, { route: "/new", name: "New" })}
+      ${HNButton(context, { route: "/ask", name: "Ask" })}
+      ${HNButton(context, { route: "/show", name: "Show" })}
+      ${HNButton(context, { route: "/jobs", name: "Jobs" })}
+      ${SecretDemosButton(context)}
       ${
-        asynco(blocs.of(SecretCodeBloc).unlockedSubject, unlocked =>
+        awaito(context.blocs.of(SecretCodeBloc).unlockedSubject, unlocked =>
           unlocked
             ? html`
                 <div
                   style="display:inline-flex; position:relative; right:0; justify-content: flex-end"
                 >
                   ${
-                    Button(blocs, {
+                    Button(context, {
                       textObservable: just("Clear storage"),
                       eventObserver: {
                         next() {

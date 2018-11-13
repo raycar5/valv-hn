@@ -8,3 +8,7 @@ coverage
 ts-out
 npm-debug.log
 debug.log
+.vscode
+*.log
+.firebase
+.firebaserc
