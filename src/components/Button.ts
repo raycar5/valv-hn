@@ -1,18 +1,35 @@
 import { html } from "lit-html";
-import { PaperButtonElement } from "@polymer/paper-button/paper-button.js";
 import { Observable, NextObserver } from "rxjs";
 import { awaito, eventToObserver, Widget } from "valv";
+import { styleMap } from "lit-html/directives/styleMap";
+import { classMap } from "lit-html/directives/classMap";
 
 export interface ButtonProps {
   eventObserver: NextObserver<MouseEvent>;
   textObservable: Observable<string>;
+  color?: string;
+  backgroundColor?: string;
+  raised?: boolean;
 }
 
 export const Button = Widget(
-  (context, { eventObserver, textObservable }: ButtonProps) =>
+  (
+    context,
+    {
+      eventObserver,
+      textObservable,
+      color = "black",
+      backgroundColor = "white",
+      raised = true
+    }: ButtonProps
+  ) =>
     html`
-      <paper-button raised @click="${eventToObserver(eventObserver)}">
+      <button
+        class="ripple ${classMap({ raised })}"
+        style="${styleMap({ color, backgroundColor })}"
+        @click="${eventToObserver(eventObserver)}"
+      >
         ${awaito(textObservable)}
-      </paper-button>
+      </button>
     `
 );

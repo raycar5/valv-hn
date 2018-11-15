@@ -21,7 +21,7 @@ context.blocs.register(RouterBloc);
 context.blocs.register(HNBloc);
 context.blocs.register(SecretCodeBloc);
 
-const Home = makeRedirecter("/top");
+const Home = makeRedirecter("/top/1");
 
 const routes: PageFactoryMap<any> = {
   "/top": Top,

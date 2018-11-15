@@ -1,12 +1,8 @@
-import { Widget, PaginatedRouteProps, awaito, ValvContext } from "valv";
-import { html, TemplateInstance } from "lit-html";
-import { StoryListItem } from "../components/StoryListItem";
+import { Widget, awaito, ValvContext } from "valv";
+import { html } from "lit-html";
 import { HNBloc, LoadStatus } from "../blocs/HN";
-import { HNComment } from "../components/HNComment";
-import { repeat } from "lit-html/directives/repeat";
 import { defer } from "rxjs";
 import { unsafeHTML } from "lit-html/directives/unsafe-html";
-import { paperMaterial } from "../styles";
 
 export function HNUserPageMatcher(context: ValvContext) {
   return (path: string) => {
@@ -29,11 +25,6 @@ export const HNUserPage = Widget((context, user: string) => {
         })
       )
     }
-    <custom-style>
-      <style is="custom-style" include="paper-material-styles">
-        ${paperMaterial}
-      </style>
-    </custom-style>
     <div class="paper-material">
       ${
         awaito(hnbloc.userObservable, userMessage => {

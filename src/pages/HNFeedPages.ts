@@ -1,13 +1,10 @@
 import { html } from "lit-html";
 import { Subject, defer } from "rxjs";
-import "@polymer/paper-button/paper-button.js";
 import { awaito, Widget, RouterBloc, PaginatedRouteProps, just } from "valv";
 import { mapTo } from "rxjs/operators";
 import { StoryList } from "../components/StoryList";
 import { HNBloc, HNFeed } from "../blocs/HN";
 import { Button } from "../components/Button";
-import "@polymer/paper-styles/paper-styles-classes";
-import { paperMaterial } from "../styles";
 
 function makeHNPage(feed: HNFeed) {
   return Widget((context, { page }: PaginatedRouteProps<any>) => {
@@ -21,11 +18,6 @@ function makeHNPage(feed: HNFeed) {
     previous.pipe(mapTo(-1)).subscribe(router.paginationDeltaObserver);
 
     return html`
-      <custom-style>
-        <style is="custom-style" include="paper-material-styles">
-          ${paperMaterial}
-        </style>
-      </custom-style>
       ${
         awaito(
           defer(() => {

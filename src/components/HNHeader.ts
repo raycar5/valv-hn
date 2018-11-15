@@ -1,8 +1,7 @@
 import { html } from "lit-html";
 import { Subject } from "rxjs";
-import { PaperButtonElement } from "@polymer/paper-button/paper-button.js";
 import { awaito, eventToObserver, Widget, RouterBloc, just } from "valv";
-import { mapTo, map } from "rxjs/operators";
+import { mapTo, map, delay, debounceTime } from "rxjs/operators";
 import { ValvSpin } from "./ValvSpin";
 import { SecretDemosButton } from "./SecretDemosButton";
 import { Button } from "./Button";
@@ -17,20 +16,25 @@ const HNButton = Widget((context, { route, name }: HNButtonProps) => {
   const router = context.blocs.of(RouterBloc);
   s.pipe(mapTo(route)).subscribe(router.nextObserver);
   const yellowButton = html`
-    <paper-button style="color: #f5d328" @click="${eventToObserver(s)}"
-      >${name}</paper-button
+    <button
+      class="ripple"
+      style="color: #f5d328"
+      @click="${eventToObserver(s)}"
     >
+      ${name}
+    </button>
   `;
   const whiteButton = html`
-    <paper-button style="color: #fff" @click="${eventToObserver(s)}"
-      >${name}</paper-button
-    >
+    <button class="ripple" style="color: #fff" @click="${eventToObserver(s)}">
+      ${name}
+    </button>
   `;
 
   return html`
     ${
       awaito(
         router.routeObservable.pipe(
+          delay(200),
           map(path => (path.includes(route) ? yellowButton : whiteButton))
         )
       )

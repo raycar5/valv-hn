@@ -245,66 +245,54 @@ export const SecretDemosButton = Widget(context => {
   return html`
     <div
       style="position:fixed; top:0; bottom:0; right:0; left:0; z-index:100; background-color: #000; visibility: hidden; "
-      @click="${
-        async () => {
-          const action = await animationSubject.pipe(take(1)).toPromise();
-          if (action == SecretAnimationAction.OPEN_CHEST) {
-            animationSubject.next(SecretAnimationAction.MOVE_BUTTON);
-            secretbloc.unlockedSubject.next(true);
-          }
+      @click="${async () => {
+        const action = await animationSubject.pipe(take(1)).toPromise();
+        if (action == SecretAnimationAction.OPEN_CHEST) {
+          animationSubject.next(SecretAnimationAction.MOVE_BUTTON);
+          secretbloc.unlockedSubject.next(true);
         }
-      }"
-      i="${
-        interact({
-          next({ element }) {
-            overlay = element as HTMLDivElement;
-          }
-        })
-      }"
+      }}"
+      i="${interact({
+        next({ element }) {
+          overlay = element as HTMLDivElement;
+        }
+      })}"
     ></div>
     <img
       src="${ClosedChest}"
       style="position:fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index:101; visibility: hidden;"
-      i="${
-        interact({
-          next({ element }) {
-            closedchest = element as HTMLImageElement;
-          }
-        })
-      }"
+      i="${interact({
+        next({ element }) {
+          closedchest = element as HTMLImageElement;
+        }
+      })}"
     />
     <img
       src="${OpenChest}"
       style="position:fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index:102; visibility:hidden"
-      i="${
-        interact({
-          next({ element }) {
-            openchest = element as HTMLImageElement;
-          }
-        })
-      }"
-    />
-    <paper-button
-      raised
-      style="color: #fff; z-index:103; visibility: hidden"
-      @click="${
-        async () => {
-          const action = await animationSubject.pipe(take(1)).toPromise();
-          if (action == SecretAnimationAction.OPEN_CHEST) {
-            animationSubject.next(SecretAnimationAction.MOVE_BUTTON);
-            secretbloc.unlockedSubject.next(true);
-          } else {
-            context.blocs.of(RouterBloc).nextObserver.next("/secret");
-          }
+      i="${interact({
+        next({ element }) {
+          openchest = element as HTMLImageElement;
         }
-      }"
-      i="${
-        interact({
-          next({ element }) {
-            button = element as HTMLDivElement;
-          }
-        })
-      }"
+      })}"
+    />
+    <button
+    class="raised ripple"
+      style="color: #fff; z-index:103; visibility: hidden"
+      @click="${async () => {
+        const action = await animationSubject.pipe(take(1)).toPromise();
+        if (action == SecretAnimationAction.OPEN_CHEST) {
+          animationSubject.next(SecretAnimationAction.MOVE_BUTTON);
+          secretbloc.unlockedSubject.next(true);
+        } else {
+          context.blocs.of(RouterBloc).nextObserver.next("/secret");
+        }
+      }}"
+      i="${interact({
+        next({ element }) {
+          button = element as HTMLDivElement;
+        }
+      })}"
     >
       Secret
     </paper-button>

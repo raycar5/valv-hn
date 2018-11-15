@@ -6,7 +6,6 @@ import { HNComment } from "../components/HNComment";
 import { repeat } from "lit-html/directives/repeat";
 import { defer } from "rxjs";
 import { unsafeHTML } from "lit-html/directives/unsafe-html";
-import { paperMaterial } from "../styles";
 
 export const HNStoryPage = Widget(
   (context, { page }: PaginatedRouteProps<any>) => {
@@ -19,11 +18,6 @@ export const HNStoryPage = Widget(
           })
         )
       }
-      <custom-style>
-        <style is="custom-style" include="paper-material-styles">
-          ${paperMaterial}
-        </style>
-      </custom-style>
       <div class="paper-material">
         ${
           awaito(hnbloc.storyObservable, storyMessage => {
