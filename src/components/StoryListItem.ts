@@ -9,35 +9,41 @@ export const StoryListItem = Widget(
   ) => {
     const router = context.blocs.of(RouterBloc);
     return html`
-      <div
-        @click="${
-          () =>
-            domain ? window.open(url) : router.nextObserver.next(`/story/${id}`)
-        }"
-        style="display:flex; flex-direction:column; cursor: pointer;"
+      <a
+        href="${domain ? url : `/story/${id}`}"
+        target="${domain ? "_blank" : ""}"
+        style="text-decoration:none"
       >
-        <div style="font-size:1.3rem">
-          <span style="color:#000">${title}</span> ${
-            domain
-              ? html`
-                  <span style="color:#666">(${domain})</span>
-                `
-              : ""
-          }
-        </div>
-        <div style="font-size:.75rem; color:#666">
-          ${points} points by <a>${user}</a> ${time_ago} |
-          <span
-            @click="${
-              eventToObserver(router.nextObserver, (e: Event) => {
-                e.stopPropagation();
-                return `/story/${id}`;
-              })
-            }"
-            >${comments_count} comments</span
-          >
-        </div>
-      </div>
+        ${
+          html`
+            <div style="display:flex; flex-direction:column; cursor: pointer;">
+              <div style="font-size:1.3rem">
+                <span style="color:#000">${title}</span> ${
+                  domain
+                    ? html`
+                        <span style="color:#666">(${domain})</span>
+                      `
+                    : ""
+                }
+              </div>
+              <div style="font-size:.75rem; color:#666 ;">
+                ${points} points by <a>${user}</a> ${time_ago} |
+                <a
+                  style="color: #666"
+                  @click="${
+                    (e: MouseEvent) => {
+                      e.preventDefault();
+                      router.nextObserver.next(`/story/${id}`);
+                    }
+                  }"
+                  href="/story/${id}"
+                  >${comments_count} comments</a
+                >
+              </div>
+            </div>
+          `
+        }</a
+      >
     `;
   }
 );
