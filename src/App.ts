@@ -14,6 +14,7 @@ import { Top, Ask, Jobs, New, Show } from "./pages/HNFeedPages";
 import { HNStoryPage } from "./pages/HNStoryPage";
 import { SecretCodeBloc } from "./blocs/SecretCodeBloc";
 import { SecretDemoPage } from "./pages/SecretDemoPage";
+import { HNUserPageMatcher } from "./pages/HNUserPage";
 
 const context = new Context();
 context.blocs.register(RouterBloc);
@@ -46,7 +47,10 @@ export const App = html`
   ${
     RouterWidget(context, {
       routeObservable: context.blocs.of(RouterBloc).routeObservable,
-      matchers: [PaginatedRouteMatcher(context, routes)],
+      matchers: [
+        PaginatedRouteMatcher(context, routes),
+        HNUserPageMatcher(context)
+      ],
       routes: {
         "/": Home(context),
         "/secret": SecretDemoPage(context),

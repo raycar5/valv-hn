@@ -1,0 +1,77 @@
+import { Widget, PaginatedRouteProps, awaito, ValvContext } from "valv";
+import { html, TemplateInstance } from "lit-html";
+import { StoryListItem } from "../components/StoryListItem";
+import { HNBloc, LoadStatus } from "../blocs/HN";
+import { HNComment } from "../components/HNComment";
+import { repeat } from "lit-html/directives/repeat";
+import { defer } from "rxjs";
+import { unsafeHTML } from "lit-html/directives/unsafe-html";
+import { paperMaterial } from "../styles";
+
+export function HNUserPageMatcher(context: ValvContext) {
+  return (path: string) => {
+    const regex = /^\/user\/([^\s\/]+)\/?$/; //probably not good enough regex but oh well
+    const match = regex.exec(path);
+    if (!match || !match[1]) {
+      return undefined;
+    }
+    return HNUserPage(context, match[1]);
+  };
+}
+
+export const HNUserPage = Widget((context, user: string) => {
+  const hnbloc = context.blocs.of(HNBloc);
+  return html`
+    ${
+      awaito(
+        defer(() => {
+          hnbloc.userSelectorObserver.next(user);
+        })
+      )
+    }
+    <custom-style>
+      <style is="custom-style" include="paper-material-styles">
+        ${paperMaterial}
+      </style>
+    </custom-style>
+    <div class="paper-material">
+      ${
+        awaito(hnbloc.userObservable, userMessage => {
+          switch (userMessage.loadStatus) {
+            case LoadStatus.ERROR:
+              return `
+                Error :(
+              `;
+            case LoadStatus.LOADING:
+              return `
+                Loading
+              `;
+            case LoadStatus.LOADED:
+              const { created, karma, about } = userMessage.user;
+              return html`
+                <div style="margin: 10px">
+                  <div>User: ${user}</div>
+                  <div>Created: ${created}</div>
+                  <div>Karma: ${karma}</div>
+                  <div>${unsafeHTML(about)}</div>
+                  <div>
+                    <a href="https://news.ycombinator.com/submitted?id=${user}">
+                      submitted</a
+                    >
+                    |
+                    <a href="https://news.ycombinator.com/threads?id=${user}">
+                      comments</a
+                    >
+                    |
+                    <a href="https://news.ycombinator.com/favorites?id=${user}">
+                      favorites
+                    </a>
+                  </div>
+                </div>
+              `;
+          }
+        })
+      }
+    </div>
+  `;
+});

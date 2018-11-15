@@ -1,6 +1,5 @@
 import { Widget, PaginatedRouteProps, awaito } from "valv";
 import { html } from "lit-html";
-import { HNHeader } from "../components/HNHeader";
 import { StoryListItem } from "../components/StoryListItem";
 import { HNBloc, LoadStatus } from "../blocs/HN";
 import { HNComment } from "../components/HNComment";

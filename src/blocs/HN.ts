@@ -32,6 +32,13 @@ export interface HNStoryAndComments extends HNStory {
   comments: IHNComment[];
 }
 
+export interface HNUser {
+  id: string;
+  created: string;
+  karma: number;
+  about: string;
+}
+
 export enum LoadStatus {
   LOADING,
   LOADED,
@@ -41,6 +48,10 @@ export enum LoadStatus {
 export interface HNStoryMessage {
   loadStatus: LoadStatus;
   story?: HNStoryAndComments;
+}
+export interface HNUserMessage {
+  loadStatus: LoadStatus;
+  user?: HNUser;
 }
 
 export enum HNFeed {
@@ -65,6 +76,9 @@ export class HNBloc {
   public readonly storyObservable: Observable<HNStoryMessage>;
   public readonly storySelectorObserver: PartialObserver<number>;
 
+  public readonly userObservable: Observable<HNUserMessage>;
+  public readonly userSelectorObserver: PartialObserver<string>;
+
   constructor() {
     const storiesSubject = new BehaviorSubject<HNStoryPage>({
       stories: [],
@@ -82,6 +96,14 @@ export class HNBloc {
 
     const storySelectorSubject = new Subject<number>();
     this.storySelectorObserver = storySelectorSubject;
+
+    const userSubject = new BehaviorSubject<HNUserMessage>({
+      loadStatus: LoadStatus.LOADING
+    });
+    this.userObservable = userSubject;
+
+    const userSelectorSubject = new Subject<string>();
+    this.userSelectorObserver = userSelectorSubject;
 
     //Logic
     feedSelectorSubject
@@ -118,5 +140,25 @@ export class HNBloc {
         )
       )
       .subscribe(storySubject);
+
+    userSelectorSubject
+      .pipe(
+        switchMap(f =>
+          from(
+            fetch(`https://node-hnapi.herokuapp.com/user/${f}`)
+              .then(async response => ({
+                user: await response.json(),
+                loadStatus: LoadStatus.LOADED
+              }))
+              .catch(error => {
+                console.error("error fetching story from hackernews api");
+                return Promise.resolve({
+                  loadStatus: LoadStatus.ERROR
+                });
+              })
+          ).pipe(startWith({ loadStatus: LoadStatus.LOADING }))
+        )
+      )
+      .subscribe(userSubject);
   }
 }

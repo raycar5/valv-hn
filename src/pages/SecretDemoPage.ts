@@ -51,7 +51,8 @@ export const SecretDemoPage = Widget(context => {
       <wired-card elevation="2">
         <div
           style="
-        font-family: 'Gloria Hallelujah',sans-serif;
+          font-family: 'Gloria Hallelujah',sans-serif;
+          font-display: swap;
           margin:20px;
           height:400px;
           width:700px"

@@ -27,9 +27,19 @@ export const StoryListItem = Widget(
                 }
               </div>
               <div style="font-size:.75rem; color:#666 ;">
-                ${points} points by <a>${user}</a> ${time_ago} |
+                ${points} points by
                 <a
-                  style="color: #666"
+                  @click="${
+                    (e: MouseEvent) => {
+                      e.preventDefault();
+                      router.nextObserver.next(`/user/${user}`);
+                    }
+                  }"
+                  href="/user/${user}"
+                  >${user}</a
+                >
+                ${time_ago} |
+                <a
                   @click="${
                     (e: MouseEvent) => {
                       e.preventDefault();

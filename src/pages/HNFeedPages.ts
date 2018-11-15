@@ -1,10 +1,9 @@
 import { html } from "lit-html";
-import { PartialObserver, Observable, Subject, from, defer } from "rxjs";
+import { Subject, defer } from "rxjs";
 import "@polymer/paper-button/paper-button.js";
 import { awaito, Widget, RouterBloc, PaginatedRouteProps, just } from "valv";
-import { mapTo, map } from "rxjs/operators";
+import { mapTo } from "rxjs/operators";
 import { StoryList } from "../components/StoryList";
-import { HNHeader } from "../components/HNHeader";
 import { HNBloc, HNFeed } from "../blocs/HN";
 import { Button } from "../components/Button";
 import "@polymer/paper-styles/paper-styles-classes";
