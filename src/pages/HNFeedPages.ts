@@ -35,18 +35,20 @@ function makeHNPage(feed: HNFeed) {
         <div
           style="display: flex; justify-content: space-between; margin:10px; "
         >
-          ${
-            awaito(pageObservable, ({ page }) =>
-              page > 1
-                ? Button(context, {
-                    textObservable: just("Previous"),
-                    eventObserver: previous
-                  })
-                : html`
-                    <div></div>
-                  `
-            )
-          }
+          <div
+            style="${
+              awaito(pageObservable, page =>
+                page.page > 1 ? "visibility:visible" : "visibility:hidden"
+              )
+            }"
+          >
+            ${
+              Button(context, {
+                textObservable: just("Previous"),
+                eventObserver: previous
+              })
+            }
+          </div>
           ${
             Button(context, {
               textObservable: just("Next"),
