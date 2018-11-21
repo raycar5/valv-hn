@@ -1,7 +1,7 @@
 import { html } from "lit-html";
 import { Subject } from "rxjs";
 import { awaito, eventToObserver, Widget, RouterBloc, just } from "valv";
-import { mapTo, map, delay, debounceTime } from "rxjs/operators";
+import { mapTo, map } from "rxjs/operators";
 import { ValvSpin } from "./ValvSpin";
 import { SecretDemosButton } from "./SecretDemosButton";
 import { Button } from "./Button";
@@ -12,7 +12,7 @@ interface HNButtonProps {
   name: string;
 }
 const HNButton = Widget((context, { route, name }: HNButtonProps) => {
-  const s = new Subject<string>();
+  const s = new Subject<any>();
   const router = context.blocs.of(RouterBloc);
   s.pipe(mapTo(route)).subscribe(router.nextObserver);
   const yellowButton = html`
@@ -31,14 +31,27 @@ const HNButton = Widget((context, { route, name }: HNButtonProps) => {
   `;
 
   return html`
-    ${
-      awaito(
-        router.routeObservable.pipe(
-          delay(200),
-          map(path => (path.includes(route) ? yellowButton : whiteButton))
+    <span
+      style="${
+        awaito(
+          router.routeObservable.pipe(
+            map(path =>
+              path.includes(route)
+                ? "--button-color: #f5d328"
+                : "--button-color: #fff"
+            )
+          )
         )
-      )
-    }
+      }"
+    >
+      ${
+        Button(context, {
+          eventObserver: s,
+          textObservable: just(name),
+          raised: false
+        })
+      }
+    </span>
   `;
 });
 export const HNHeader = Widget(context => {

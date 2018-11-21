@@ -69,8 +69,12 @@ export interface HNStoryPage {
   stories: HNStory[];
   pageNumber: number;
 }
+export interface HNStoryPageMessage {
+  loadStatus: LoadStatus;
+  page?: HNStoryPage;
+}
 export class HNBloc {
-  public readonly storiesObservable: Observable<HNStoryPage>;
+  public readonly storiesObservable: Observable<HNStoryPageMessage>;
   public readonly feedSelectorObserver: PartialObserver<FeedSelector>;
 
   public readonly storyObservable: Observable<HNStoryMessage>;
@@ -80,9 +84,8 @@ export class HNBloc {
   public readonly userSelectorObserver: PartialObserver<string>;
 
   constructor() {
-    const storiesSubject = new BehaviorSubject<HNStoryPage>({
-      stories: [],
-      pageNumber: 1
+    const storiesSubject = new BehaviorSubject<HNStoryPageMessage>({
+      loadStatus: LoadStatus.LOADING
     });
     //Setup
     this.storiesObservable = storiesSubject;
@@ -110,13 +113,21 @@ export class HNBloc {
       .pipe(
         switchMap(f =>
           from(
-            fetch(
-              `https://node-hnapi.herokuapp.com/${f.feed}?page=${f.page}`
-            ).then(async response => ({
-              stories: await response.json(),
-              pageNumber: f.page
-            }))
-          )
+            fetch(`https://node-hnapi.herokuapp.com/${f.feed}?page=${f.page}`)
+              .then(async response => ({
+                loadStatus: LoadStatus.LOADED,
+                page: {
+                  stories: await response.json(),
+                  pageNumber: f.page
+                }
+              }))
+              .catch(error => {
+                console.error("error fetching story from hackernews api");
+                return Promise.resolve({
+                  loadStatus: LoadStatus.ERROR
+                });
+              })
+          ).pipe(startWith({ loadStatus: LoadStatus.LOADING }))
         )
       )
       .subscribe(storiesSubject);

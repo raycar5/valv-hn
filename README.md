@@ -4,9 +4,9 @@ HackerNews viewer demo app built with [| Valv |](https://github.com/raycar5/valv
 
 ## Todo
 
-- Responsiveness
 - pwa stuff
 - http2 push
+- more fancy animations
 - per route code splitting
   <br>
 

@@ -3,10 +3,13 @@ import {
   ValvContext,
   RouterBloc,
   RouterWidget,
-  PageFactoryMap,
-  PaginatedRouteMatcher,
   makeRedirecter,
-  Context
+  Context,
+  Widget,
+  InWidgetPaginationProps,
+  InWidgetMatcher,
+  InWidgetPaginationMatcherHelper,
+  PaginatedRouteMatcher
 } from "valv";
 import { HNHeader } from "./components/HNHeader";
 import { HNBloc } from "./blocs/HN";
@@ -23,24 +26,40 @@ context.blocs.register(SecretCodeBloc);
 
 const Home = makeRedirecter("/top/1");
 
-const routes: PageFactoryMap<any> = {
+const routes = {
   "/top": Top,
   "/new": New,
   "/ask": Ask,
   "/show": Show,
-  "/jobs": Jobs,
+  "/jobs": Jobs
+};
+const paginatedRoutes = {
   "/story": HNStoryPage
 };
 
-function generateDefaultPages(
-  context: ValvContext,
-  routes: PageFactoryMap<any>
-) {
+type WidgetMap<T> = { [path: string]: Widget<T> };
+function generateDefaultPages(context: ValvContext, routes: WidgetMap<any>) {
   const resp: { [path: string]: TemplateResult } = {};
   for (const key in routes) {
     resp[key] = makeRedirecter(key + "/1")(context);
   }
   return resp;
+}
+function generateFeedMatchers(
+  context: ValvContext,
+  routes: WidgetMap<InWidgetPaginationProps>
+) {
+  const matchers: any[] = [];
+  for (const key in routes) {
+    matchers.push(
+      InWidgetMatcher(
+        context,
+        InWidgetPaginationMatcherHelper(key),
+        routes[key]
+      )
+    );
+  }
+  return matchers;
 }
 export const App = html`
   ${HNHeader(context)}
@@ -48,7 +67,8 @@ export const App = html`
     RouterWidget(context, {
       routeObservable: context.blocs.of(RouterBloc).routeObservable,
       matchers: [
-        PaginatedRouteMatcher(context, routes),
+        ...generateFeedMatchers(context, routes),
+        PaginatedRouteMatcher(context, paginatedRoutes),
         HNUserPageMatcher(context)
       ],
       routes: {

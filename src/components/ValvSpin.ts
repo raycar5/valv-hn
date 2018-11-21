@@ -8,7 +8,7 @@ export const ValvSpin = Widget(context => {
   return html`
           <div
             @click="${eventToObserver(animationSubject)}"
-            style="margin:20px; font-size: 20dp; color:#fff; display:inline-block"
+            style="margin: 18px 1.5vh; color:#fff; display:inline-block"
             i="${interact(
               {
                 next({ element }) {

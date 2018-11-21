@@ -3,6 +3,7 @@ import { html } from "lit-html";
 import { HNBloc, LoadStatus } from "../blocs/HN";
 import { defer } from "rxjs";
 import { unsafeHTML } from "lit-html/directives/unsafe-html";
+import { Spinner } from "../components/Spinner";
 
 export function HNUserPageMatcher(context: ValvContext) {
   return (path: string) => {
@@ -34,8 +35,12 @@ export const HNUserPage = Widget((context, user: string) => {
                 Error :(
               `;
             case LoadStatus.LOADING:
-              return `
-                Loading
+              return html`
+                <div
+                  style="position:fixed; top: 50%; left:50%; transform: translate(-50%, -50%);"
+                >
+                  ${Spinner(context)}
+                </div>
               `;
             case LoadStatus.LOADED:
               const { created, karma, about } = userMessage.user;
