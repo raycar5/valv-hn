@@ -57,6 +57,7 @@ export const SecretDemoPage = Widget(context => {
           height:400px;
           width:700px"
         >
+          <h1>Valv features</h1>
           <wired-checkbox
             text="Easy UI design and composition"
           ></wired-checkbox>
