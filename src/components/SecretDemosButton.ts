@@ -72,7 +72,11 @@ enum SecretAnimationAction {
   NONE
 }
 export const SecretDemosButton = Widget(context => {
-  if (!context.blocs.of(ConfigBloc).areAnimationsSupported) return html``;
+  if (
+    !context.blocs.of(ConfigBloc).areAnimationsSupported ||
+    window.innerWidth <= 800
+  )
+    return html``;
 
   const secretbloc = context.blocs.of(SecretCodeBloc);
 
