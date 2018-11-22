@@ -1,6 +1,7 @@
 import { Widget, interact, eventToObserver } from "valv";
 import { html } from "lit-html";
 import { Subject } from "rxjs";
+import { ConfigBloc } from "../blocs/Config";
 
 export const ValvSpin = Widget(context => {
   const animationSubject = new Subject();
@@ -12,24 +13,25 @@ export const ValvSpin = Widget(context => {
             i="${interact(
               {
                 next({ element }) {
-                  if (!animation) {
-                    animation = element.animate(
-                      [
+                  if (context.blocs.of(ConfigBloc).areAnimationsSupported)
+                    if (!animation) {
+                      animation = element.animate(
+                        [
+                          {
+                            transform: "rotate(0)"
+                          },
+                          {
+                            transform: "rotate(360deg)"
+                          }
+                        ] as Keyframe[],
                         {
-                          transform: "rotate(0)"
-                        },
-                        {
-                          transform: "rotate(360deg)"
+                          duration: 600,
+                          iterations: 1,
+                          easing: "cubic-bezier(.3,-0.48,.69,1.48)"
                         }
-                      ] as Keyframe[],
-                      {
-                        duration: 600,
-                        iterations: 1,
-                        easing: "cubic-bezier(.3,-0.48,.69,1.48)"
-                      }
-                    );
-                    return;
-                  }
+                      );
+                      return;
+                    }
                   if (animation.playState !== "running") {
                     animation.reverse();
                     animation.play();

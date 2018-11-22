@@ -11,12 +11,14 @@ import {
 } from "rxjs/operators";
 import { Spinner } from "./Spinner";
 import { AnimatedStoryPage } from "./AnimatedStoryPage";
+import { ConfigBloc } from "../blocs/Config";
 
 interface StoryListProps {
   storyPages: Observable<HNStoryPageMessage>;
 }
 
 export const StoryList = Widget((context, { storyPages }: StoryListProps) => {
+  const { areAnimationsSupported } = context.blocs.of(ConfigBloc);
   const exitSubject = new Subject();
 
   storyPages
@@ -58,8 +60,11 @@ export const StoryList = Widget((context, { storyPages }: StoryListProps) => {
           {
             next({ element, value: { loadStatus, page } }) {
               const inPlaying =
-                loaderInAnimation && loaderInAnimation.playState === "running";
+                areAnimationsSupported &&
+                loaderInAnimation &&
+                loaderInAnimation.playState === "running";
               const outPlaying =
+                areAnimationsSupported &&
                 loaderOutAnimation &&
                 loaderOutAnimation.playState === "running";
               if (
@@ -77,27 +82,28 @@ export const StoryList = Widget((context, { storyPages }: StoryListProps) => {
                       loaderOutAnimation.pause();
                     }
                     if (!inPlaying && !isSpinnerInView) {
-                      loaderInAnimation = element.animate(
-                        [
+                      if (areAnimationsSupported)
+                        loaderInAnimation = element.animate(
+                          [
+                            {
+                              transform: `translateY(${
+                                outPlaying ? top : -top - height
+                              }px) translate(-50%, -50%)`,
+                              visibility: "visible"
+                            },
+                            {
+                              transform: "translate(-50%,-50%)",
+                              visibility: "visible"
+                            }
+                          ] as Keyframe[],
                           {
-                            transform: `translateY(${
-                              outPlaying ? top : -top - height
-                            }px) translate(-50%, -50%)`,
-                            visibility: "visible"
-                          },
-                          {
-                            transform: "translate(-50%,-50%)",
-                            visibility: "visible"
-                          }
-                        ] as Keyframe[],
-                        {
-                          duration: 200,
-                          iterations: 1,
-                          easing: outPlaying ? "linear" : "ease-out",
+                            duration: 200,
+                            iterations: 1,
+                            easing: outPlaying ? "linear" : "ease-out",
 
-                          fill: "forwards"
-                        }
-                      );
+                            fill: "forwards"
+                          }
+                        );
                       isSpinnerInView = true;
                     }
                   }
@@ -109,27 +115,28 @@ export const StoryList = Widget((context, { storyPages }: StoryListProps) => {
                       loaderInAnimation.pause();
                     }
                     if (!outPlaying && isSpinnerInView) {
-                      loaderOutAnimation = element.animate(
-                        [
+                      if (areAnimationsSupported)
+                        loaderOutAnimation = element.animate(
+                          [
+                            {
+                              transform: `translateY(${
+                                inPlaying ? top : 0
+                              }px) translate(-50%, -50%)`,
+                              visibility: "visible"
+                            },
+                            {
+                              transform: `translateY(100vh)`,
+                              visibility: "hidden"
+                            }
+                          ] as Keyframe[],
                           {
-                            transform: `translateY(${
-                              inPlaying ? top : 0
-                            }px) translate(-50%, -50%)`,
-                            visibility: "visible"
-                          },
-                          {
-                            transform: `translateY(100vh)`,
-                            visibility: "hidden"
-                          }
-                        ] as Keyframe[],
-                        {
-                          duration: 300,
-                          iterations: 1,
-                          easing: inPlaying ? "linear" : "ease-in",
+                            duration: 300,
+                            iterations: 1,
+                            easing: inPlaying ? "linear" : "ease-in",
 
-                          fill: "forwards"
-                        }
-                      );
+                            fill: "forwards"
+                          }
+                        );
                       isSpinnerInView = false;
                     }
                   }

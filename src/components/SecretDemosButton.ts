@@ -12,6 +12,7 @@ import {
   delay
 } from "rxjs/operators";
 import { Button } from "./Button";
+import { ConfigBloc } from "../blocs/Config";
 const ClosedChest = require("../assets/chestclosed.png");
 const OpenChest = require("../assets/chestopen.png");
 const Light = require("../assets/light.png");
@@ -71,6 +72,8 @@ enum SecretAnimationAction {
   NONE
 }
 export const SecretDemosButton = Widget(context => {
+  if (!context.blocs.of(ConfigBloc).areAnimationsSupported) return html``;
+
   const secretbloc = context.blocs.of(SecretCodeBloc);
 
   let overlay: HTMLDivElement;

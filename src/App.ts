@@ -18,8 +18,11 @@ import { HNStoryPage } from "./pages/HNStoryPage";
 import { SecretCodeBloc } from "./blocs/SecretCodeBloc";
 import { SecretDemoPage } from "./pages/SecretDemoPage";
 import { HNUserPageMatcher } from "./pages/HNUserPage";
+import { ConfigBloc } from "./blocs/Config";
+import { SafariAnimationsOverlay } from "./components/SafariAnimationsOverlay";
 
 const context = new Context();
+context.blocs.register(ConfigBloc);
 context.blocs.register(RouterBloc);
 context.blocs.register(HNBloc);
 context.blocs.register(SecretCodeBloc);
@@ -62,7 +65,7 @@ function generateFeedMatchers(
   return matchers;
 }
 export const App = html`
-  ${HNHeader(context)}
+  ${SafariAnimationsOverlay(context)} ${HNHeader(context)}
   ${
     RouterWidget(context, {
       routeObservable: context.blocs.of(RouterBloc).routeObservable,

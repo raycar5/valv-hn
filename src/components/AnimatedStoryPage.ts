@@ -1,5 +1,5 @@
 import { HNStoryPage } from "../blocs/HN";
-import { Observable, fromEvent, Subject } from "rxjs";
+import { Observable, fromEvent, Subject, config } from "rxjs";
 import { Widget, interact, RouterBloc, sleep } from "valv";
 import { html } from "lit-html";
 import { repeat } from "lit-html/directives/repeat";
@@ -7,6 +7,7 @@ import { StoryListItem } from "./StoryListItem";
 import { take, delay, map, auditTime, filter } from "rxjs/operators";
 import { Manager, Pan, DIRECTION_HORIZONTAL } from "hammerjs";
 import { animationFrame } from "rxjs/internal/scheduler/animationFrame";
+import { ConfigBloc } from "../blocs/Config";
 
 export interface StoryPageProps {
   page: HNStoryPage;
@@ -22,6 +23,7 @@ function calculatePanPosition({ dx, y }: PanParams, top: number) {
 export const AnimatedStoryPage = Widget(
   (context, { page, exitObservable }: StoryPageProps) => {
     let mc: HammerManager;
+    const { areAnimationsSupported } = context.blocs.of(ConfigBloc);
     const panSubject = new Subject<PanParams>();
     const panEndSubject = new Subject<PanParams>();
     const paginationSubject = new Subject<Number>();
@@ -54,44 +56,50 @@ export const AnimatedStoryPage = Widget(
                         width,
                         top
                       } = element.getBoundingClientRect() as DOMRect;
-                      inAnimation = element.animate(
-                        [
+                      if (areAnimationsSupported) {
+                        inAnimation = element.animate(
+                          [
+                            {
+                              transform: `translateX(100vw) translateX(${width /
+                                2}px)`,
+                              visibility: "visible"
+                            },
+                            {
+                              transform: `translateX(0)`,
+                              visibility: "visible"
+                            }
+                          ] as Keyframe[],
                           {
-                            transform: `translateX(100vw) translateX(${width /
-                              2}px)`,
-                            visibility: "visible"
-                          },
-                          {
-                            transform: `translateX(0)`,
-                            visibility: "visible"
+                            easing: "ease-in",
+                            duration: 500,
+                            iterations: 1,
+                            delay: index * 100,
+                            fill: "forwards"
                           }
-                        ] as Keyframe[],
-                        {
-                          easing: "ease-in",
-                          duration: 500,
-                          iterations: 1,
-                          delay: index * 100,
-                          fill: "forwards"
-                        }
-                      );
+                        );
+                      } else {
+                        element.style.visibility = "visible";
+                      }
                       panSubject.subscribe(async panParams => {
                         let transitionEnabled = false;
-                        if (inAnimation.playState === "running") {
-                          const style = window.getComputedStyle(element);
-                          const matrix = new WebKitCSSMatrix(
-                            style.webkitTransform
-                          );
+                        if (areAnimationsSupported) {
+                          if (inAnimation.playState === "running") {
+                            const style = window.getComputedStyle(element);
+                            const matrix = new WebKitCSSMatrix(
+                              style.webkitTransform
+                            );
+                            inAnimation.cancel();
+                            element.style.transform = `translateX(${
+                              matrix.m41
+                            }px)`;
+                            await new Promise(resolve =>
+                              requestAnimationFrame(resolve)
+                            );
+                            element.style.transition = "transform .1s ease-out";
+                            transitionEnabled = true;
+                          }
                           inAnimation.cancel();
-                          element.style.transform = `translateX(${
-                            matrix.m41
-                          }px)`;
-                          await new Promise(resolve =>
-                            requestAnimationFrame(resolve)
-                          );
-                          element.style.transition = "transform .1s ease-out";
-                          transitionEnabled = true;
                         }
-                        inAnimation.cancel();
                         element.style.visibility = "visible";
                         element.style.transform = `translateX(${calculatePanPosition(
                           panParams,
@@ -152,7 +160,8 @@ export const AnimatedStoryPage = Widget(
                           )
                           .subscribe(panEndSubject);
                       }
-                      inAnimation.addEventListener("finish", onFinish);
+                      if (areAnimationsSupported)
+                        inAnimation.addEventListener("finish", onFinish);
                     }
                   })
                 }"
@@ -166,45 +175,53 @@ export const AnimatedStoryPage = Widget(
                           style.webkitTransform
                         );
                         const wasAnimationPlaying =
+                          areAnimationsSupported &&
                           inAnimation.playState === "running";
 
                         if (mc) mc.destroy();
 
                         if (wasAnimationPlaying) inAnimation.pause();
-                        const shouldContinueFluidly = matrix.m41 != 0;
+                        const shouldContinueFluidly =
+                          matrix.m41 < 1 && matrix.m41 > -1;
 
-                        const animation = element.animate(
-                          [
+                        if (areAnimationsSupported) {
+                          element.animate(
+                            [
+                              {
+                                transform: `translateX(${Math.round(
+                                  matrix.m41
+                                )}px)`
+                              },
+                              {
+                                transform: `translateX(${-Math.max(
+                                  0,
+                                  matrix.m41
+                                ) -
+                                  width * 2}px)`
+                              }
+                            ] as Keyframe[],
                             {
-                              transform: `translateX(${Math.round(
-                                matrix.m41
-                              )}px)`
-                            },
-                            {
-                              transform: `translateX(${-Math.max(
-                                0,
-                                matrix.m41
-                              ) -
-                                width * 2}px)`
+                              easing: !shouldContinueFluidly
+                                ? "ease-in"
+                                : "linear",
+                              duration: 500,
+                              iterations: 1,
+                              delay: !shouldContinueFluidly ? index * 100 : 0,
+                              fill: "forwards"
                             }
-                          ] as Keyframe[],
-                          {
-                            easing: !shouldContinueFluidly
-                              ? "ease-in"
-                              : "linear",
-                            duration: 500,
-                            iterations: 1,
-                            delay: !shouldContinueFluidly ? index * 100 : 0,
-                            fill: "forwards"
+                          );
+                          if (index === page.stories.length - 1) {
+                            // Finish listener wasn't working properly
+                            setTimeout(() => {
+                              element.parentElement.parentElement.removeChild(
+                                element.parentElement
+                              );
+                            }, 500 + index * 100);
                           }
-                        );
-                        if (index === page.stories.length - 1) {
-                          // Finish listener wasn't working properly
-                          setTimeout(() => {
-                            element.parentElement.parentElement.removeChild(
-                              element.parentElement
-                            );
-                          }, 500 + index * 100);
+                        } else {
+                          element.parentElement.parentElement.removeChild(
+                            element.parentElement
+                          );
                         }
                       }
                     },
