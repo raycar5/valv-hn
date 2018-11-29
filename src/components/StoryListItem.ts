@@ -32,7 +32,7 @@ export const StoryListItem = Widget(
                   @click="${
                     (e: MouseEvent) => {
                       e.preventDefault();
-                      router.nextObserver.next(`/user/${user}`);
+                      router.$next.next(`/user/${user}`);
                     }
                   }"
                   href="/user/${user}"
@@ -43,7 +43,7 @@ export const StoryListItem = Widget(
                   @click="${
                     (e: MouseEvent) => {
                       e.preventDefault();
-                      router.nextObserver.next(`/story/${id}`);
+                      router.$next.next(`/story/${id}`);
                     }
                   }"
                   href="/story/${id}"

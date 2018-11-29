@@ -68,7 +68,7 @@ export const App = html`
   ${SafariAnimationsOverlay(context)} ${HNHeader(context)}
   ${
     RouterWidget(context, {
-      routeObservable: context.blocs.of(RouterBloc).routeObservable,
+      route$: context.blocs.of(RouterBloc).route$,
       matchers: [
         ...generateFeedMatchers(context, routes),
         PaginatedRouteMatcher(context, paginatedRoutes),

@@ -14,24 +14,24 @@ export const HNComment: Widget<HNCommentProps> = Widget(
     context,
     { comment: { id, user, time_ago, content, comments } }: HNCommentProps
   ) => {
-    const openSubject = new BehaviorSubject(true);
+    const $open$ = new BehaviorSubject(true);
     return html`
       <div style="font-size: .75rem">
         <div>
           ${
-            awaito(openSubject, open =>
+            awaito($open$, open =>
               open
                 ? html`
                     <span
                       style="cursor: pointer"
-                      @click="${() => openSubject.next(false)}"
+                      @click="${() => $open$.next(false)}"
                       >[-]</span
                     >
                   `
                 : html`
                     <span
                       style="cursor: pointer"
-                      @click="${() => openSubject.next(true)}"
+                      @click="${() => $open$.next(true)}"
                       >[+${comments.length}]</span
                     >
                   `
@@ -43,7 +43,7 @@ export const HNComment: Widget<HNCommentProps> = Widget(
       </div>
       <hr />
       ${
-        awaito(openSubject, open =>
+        awaito($open$, open =>
           open
             ? html`
                 <div style="margin-inline-start: 20px">

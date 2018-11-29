@@ -4,13 +4,13 @@ import { awaito, eventToObserver, Widget } from "valv";
 import { classMap } from "lit-html/directives/classMap";
 
 export interface ButtonProps {
-  eventObserver: NextObserver<MouseEvent>;
-  textObservable: Observable<string>;
+  $event: NextObserver<MouseEvent>;
+  text$: Observable<string>;
   raised?: boolean;
 }
 
 export const Button = Widget(
-  (context, { eventObserver, textObservable, raised = true }: ButtonProps) =>
+  (context, { $event, text$, raised = true }: ButtonProps) =>
     html`
       <style>
         button {
@@ -32,9 +32,9 @@ export const Button = Widget(
       </style>
       <button
         class="ripple ${classMap({ raised })}"
-        @click="${eventToObserver(eventObserver)}"
+        @click="${eventToObserver($event)}"
       >
-        ${awaito(textObservable)}
+        ${awaito(text$)}
       </button>
     `
 );

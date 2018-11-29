@@ -85,7 +85,7 @@ export const SafariAnimationsOverlay = Widget(context => {
                       <p>
                         Good news is, you can fix it, just enable the web
                         animations api in the advanced Safari settings under
-                        'Experimental Features'
+                        'Experimental Features' and restart Safari
                       </p>
                       <img
                         style="display:block; width:auto; max-width:100%; margin:5px auto"
@@ -112,8 +112,8 @@ export const SafariAnimationsOverlay = Widget(context => {
               }
               ${
                 Button(context, {
-                  textObservable: just("Close"),
-                  eventObserver: s
+                  text$: just("Close"),
+                  $event: s
                 })
               }
             </div>

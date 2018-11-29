@@ -1,5 +1,5 @@
 import { html } from "lit-html";
-import { Subject, defer } from "rxjs";
+import { Subject, defer, never } from "rxjs";
 import {
   awaito,
   Widget,
@@ -8,27 +8,28 @@ import {
   just,
   InWidgetPaginationProps
 } from "valv";
-import { mapTo, map, auditTime } from "rxjs/operators";
+import { mapTo, map, auditTime, merge, tap } from "rxjs/operators";
 import { StoryList } from "../components/StoryList";
 import { HNBloc, HNFeed } from "../blocs/HN";
 import { Button } from "../components/Button";
 
 function makeHNPage(feed: HNFeed) {
-  return Widget((context, { pageObservable }: InWidgetPaginationProps) => {
+  return Widget((context, { page$ }: InWidgetPaginationProps) => {
     const hnbloc = context.blocs.of(HNBloc);
     const router = context.blocs.of(RouterBloc);
     const next = new Subject();
     const previous = new Subject();
 
-    next.pipe(mapTo(+1)).subscribe(router.paginationDeltaObserver);
+    next.pipe(mapTo(+1)).subscribe(router.$paginationDelta);
 
-    previous.pipe(mapTo(-1)).subscribe(router.paginationDeltaObserver);
-    pageObservable
+    previous.pipe(mapTo(-1)).subscribe(router.$paginationDelta);
+    page$
       .pipe(
         auditTime(0),
-        map(({ page }) => ({ feed, page }))
+        map(({ page }) => ({ feed, page })),
+        merge(never()) // never complete
       )
-      .subscribe(hnbloc.feedSelectorObserver);
+      .subscribe(hnbloc.$feedSelector);
 
     return html`
       <div>
@@ -37,28 +38,28 @@ function makeHNPage(feed: HNFeed) {
         >
           <div
             style="${
-              awaito(pageObservable, page =>
+              awaito(page$, page =>
                 page.page > 1 ? "visibility:visible" : "visibility:hidden"
               )
             }"
           >
             ${
               Button(context, {
-                textObservable: just("Previous"),
-                eventObserver: previous
+                text$: just("Previous"),
+                $event: previous
               })
             }
           </div>
           ${
             Button(context, {
-              textObservable: just("Next"),
-              eventObserver: next
+              text$: just("Next"),
+              $event: next
             })
           }
         </div>
         ${
           StoryList(context, {
-            storyPages: hnbloc.storiesObservable
+            storyPage$: hnbloc.feed$
           })
         }
       </div>

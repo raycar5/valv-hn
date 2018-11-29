@@ -5,7 +5,6 @@ import {
   flatMap,
   toArray,
   filter,
-  tap,
   mapTo
 } from "rxjs/operators";
 import isEqual from "lodash-es/isEqual";
@@ -15,13 +14,13 @@ const easycode = [38, 38];
 const code = hardcode;
 export const localStorageKey = "unlocked-secret";
 export class SecretCodeBloc {
-  public readonly successObservable: Observable<boolean>;
-  public readonly unlockedSubject = new BehaviorSubject(
+  public readonly success$: Observable<boolean>;
+  public readonly $unlocked$ = new BehaviorSubject(
     localStorage.getItem("unlocked-secret") == localStorageKey
   );
   constructor() {
-    const successSubject = new BehaviorSubject(false);
-    this.successObservable = successSubject;
+    const $success$ = new BehaviorSubject(false);
+    this.success$ = $success$;
     fromEvent(document, "keydown")
       .pipe(
         map((x: KeyboardEvent) => x.keyCode),
@@ -30,9 +29,9 @@ export class SecretCodeBloc {
         filter(xarr => isEqual(code, xarr)),
         mapTo(true)
       )
-      .subscribe(successSubject);
+      .subscribe($success$);
 
-    this.unlockedSubject.subscribe(unlocked =>
+    this.$unlocked$.subscribe(unlocked =>
       unlocked ? localStorage.setItem(localStorageKey, localStorageKey) : null
     );
   }

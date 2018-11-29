@@ -22,13 +22,13 @@ export const HNUserPage = Widget((context, user: string) => {
     ${
       awaito(
         defer(() => {
-          hnbloc.userSelectorObserver.next(user);
+          hnbloc.$userSelector.next(user);
         })
       )
     }
     <div class="paper-material">
       ${
-        awaito(hnbloc.userObservable, userMessage => {
+        awaito(hnbloc.user$, userMessage => {
           switch (userMessage.loadStatus) {
             case LoadStatus.ERROR:
               return `

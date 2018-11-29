@@ -15,13 +15,13 @@ export const HNStoryPage = Widget(
       ${
         awaito(
           defer(() => {
-            hnbloc.storySelectorObserver.next(page);
+            hnbloc.$storySelector.next(page);
           })
         )
       }
       <div class="paper-material">
         ${
-          awaito(hnbloc.storyObservable, storyMessage => {
+          awaito(hnbloc.story$, storyMessage => {
             switch (storyMessage.loadStatus) {
               case LoadStatus.ERROR:
                 return `

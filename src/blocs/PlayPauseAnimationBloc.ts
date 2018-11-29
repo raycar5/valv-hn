@@ -5,11 +5,11 @@ export enum PlayPauseAnimationAction {
   PAUSE
 }
 export class PlayPauseAnimationBloc {
-  public readonly toggleObserver: PartialObserver<PlayPauseAnimationAction>;
-  public readonly toggleObservable: Observable<PlayPauseAnimationAction>;
+  public readonly $toggle: PartialObserver<PlayPauseAnimationAction>;
+  public readonly toggle$: Observable<PlayPauseAnimationAction>;
   constructor() {
-    const toggleSubject = new BehaviorSubject(PlayPauseAnimationAction.PLAY);
-    this.toggleObservable = toggleSubject;
-    this.toggleObserver = toggleSubject;
+    const $toggle$ = new BehaviorSubject(PlayPauseAnimationAction.PLAY);
+    this.toggle$ = $toggle$;
+    this.$toggle = $toggle$;
   }
 }

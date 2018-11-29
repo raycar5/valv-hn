@@ -74,42 +74,42 @@ export interface HNStoryPageMessage {
   page?: HNStoryPage;
 }
 export class HNBloc {
-  public readonly storiesObservable: Observable<HNStoryPageMessage>;
-  public readonly feedSelectorObserver: PartialObserver<FeedSelector>;
+  public readonly feed$: Observable<HNStoryPageMessage>;
+  public readonly $feedSelector: PartialObserver<FeedSelector>;
 
-  public readonly storyObservable: Observable<HNStoryMessage>;
-  public readonly storySelectorObserver: PartialObserver<number>;
+  public readonly story$: Observable<HNStoryMessage>;
+  public readonly $storySelector: PartialObserver<number>;
 
-  public readonly userObservable: Observable<HNUserMessage>;
-  public readonly userSelectorObserver: PartialObserver<string>;
+  public readonly user$: Observable<HNUserMessage>;
+  public readonly $userSelector: PartialObserver<string>;
 
   constructor() {
-    const storiesSubject = new BehaviorSubject<HNStoryPageMessage>({
+    const $feed$ = new BehaviorSubject<HNStoryPageMessage>({
       loadStatus: LoadStatus.LOADING
     });
     //Setup
-    this.storiesObservable = storiesSubject;
-    const feedSelectorSubject = new Subject<FeedSelector>();
-    this.feedSelectorObserver = feedSelectorSubject;
+    this.feed$ = $feed$;
+    const $feedSelector$ = new Subject<FeedSelector>();
+    this.$feedSelector = $feedSelector$;
 
-    const storySubject = new BehaviorSubject<HNStoryMessage>({
+    const $story = new BehaviorSubject<HNStoryMessage>({
       loadStatus: LoadStatus.LOADING
     });
-    this.storyObservable = storySubject;
+    this.story$ = $story;
 
-    const storySelectorSubject = new Subject<number>();
-    this.storySelectorObserver = storySelectorSubject;
+    const $storySelector$ = new Subject<number>();
+    this.$storySelector = $storySelector$;
 
-    const userSubject = new BehaviorSubject<HNUserMessage>({
+    const $user$ = new BehaviorSubject<HNUserMessage>({
       loadStatus: LoadStatus.LOADING
     });
-    this.userObservable = userSubject;
+    this.user$ = $user$;
 
-    const userSelectorSubject = new Subject<string>();
-    this.userSelectorObserver = userSelectorSubject;
+    const $userSelector$ = new Subject<string>();
+    this.$userSelector = $userSelector$;
 
     //Logic
-    feedSelectorSubject
+    $feedSelector$
       .pipe(
         switchMap(f =>
           from(
@@ -130,9 +130,9 @@ export class HNBloc {
           ).pipe(startWith({ loadStatus: LoadStatus.LOADING }))
         )
       )
-      .subscribe(storiesSubject);
+      .subscribe($feed$);
 
-    storySelectorSubject
+    $storySelector$
       .pipe(
         switchMap(f =>
           from(
@@ -150,9 +150,9 @@ export class HNBloc {
           ).pipe(startWith({ loadStatus: LoadStatus.LOADING }))
         )
       )
-      .subscribe(storySubject);
+      .subscribe($story);
 
-    userSelectorSubject
+    $userSelector$
       .pipe(
         switchMap(f =>
           from(
@@ -170,6 +170,6 @@ export class HNBloc {
           ).pipe(startWith({ loadStatus: LoadStatus.LOADING }))
         )
       )
-      .subscribe(userSubject);
+      .subscribe($user$);
   }
 }

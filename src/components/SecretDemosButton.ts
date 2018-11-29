@@ -87,15 +87,15 @@ export const SecretDemosButton = Widget(context => {
   let zelda = new Audio(ChestAudio);
   let bounceAnimation: Animation;
 
-  const animationSubject = new BehaviorSubject<SecretAnimationAction>(
+  const $animation$ = new BehaviorSubject<SecretAnimationAction>(
     SecretAnimationAction.NONE
   );
 
   //Only emit Start chest if there's success and it's not unlocked already
-  secretbloc.successObservable
+  secretbloc.success$
     .pipe(
       flatMap(success =>
-        secretbloc.unlockedSubject.pipe(
+        secretbloc.$unlocked$.pipe(
           take(1),
           map(unlocked => {
             return success && !unlocked;
@@ -105,13 +105,13 @@ export const SecretDemosButton = Widget(context => {
       filter(x => x),
       mapTo(SecretAnimationAction.START_CHEST)
     )
-    .subscribe(animationSubject);
+    .subscribe($animation$);
 
-  animationSubject.pipe(debounceTime(1)).subscribe({
+  $animation$.pipe(debounceTime(1)).subscribe({
     async next(action) {
       //code executed when component renders
       if (
-        await secretbloc.unlockedSubject
+        await secretbloc.$unlocked$
           .pipe(
             take(1),
             delay(0)
@@ -161,7 +161,7 @@ export const SecretDemosButton = Widget(context => {
             }
           ).onfinish = async () => {
             await sleep(650);
-            animationSubject.next(SecretAnimationAction.OPEN_CHEST);
+            $animation$.next(SecretAnimationAction.OPEN_CHEST);
           };
           closedchest.style.visibility = "visible";
 
@@ -253,10 +253,10 @@ export const SecretDemosButton = Widget(context => {
     <div
       style="position:fixed; top:0; bottom:0; right:0; left:0; z-index:100; background-color: #000; visibility: hidden; "
       @click="${async () => {
-        const action = await animationSubject.pipe(take(1)).toPromise();
+        const action = await $animation$.pipe(take(1)).toPromise();
         if (action == SecretAnimationAction.OPEN_CHEST) {
-          animationSubject.next(SecretAnimationAction.MOVE_BUTTON);
-          secretbloc.unlockedSubject.next(true);
+          $animation$.next(SecretAnimationAction.MOVE_BUTTON);
+          secretbloc.$unlocked$.next(true);
         }
       }}"
       i="${interact({
@@ -287,12 +287,12 @@ export const SecretDemosButton = Widget(context => {
     class="raised ripple"
       style="color: #fff; z-index:103; visibility: hidden"
       @click="${async () => {
-        const action = await animationSubject.pipe(take(1)).toPromise();
+        const action = await $animation$.pipe(take(1)).toPromise();
         if (action == SecretAnimationAction.OPEN_CHEST) {
-          animationSubject.next(SecretAnimationAction.MOVE_BUTTON);
-          secretbloc.unlockedSubject.next(true);
+          $animation$.next(SecretAnimationAction.MOVE_BUTTON);
+          secretbloc.$unlocked$.next(true);
         } else {
-          context.blocs.of(RouterBloc).nextObserver.next("/secret");
+          context.blocs.of(RouterBloc).$next.next("/secret");
         }
       }}"
       i="${interact({

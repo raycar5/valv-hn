@@ -14,7 +14,7 @@ interface HNButtonProps {
 const HNButton = Widget((context, { route, name }: HNButtonProps) => {
   const s = new Subject<any>();
   const router = context.blocs.of(RouterBloc);
-  s.pipe(mapTo(route)).subscribe(router.nextObserver);
+  s.pipe(mapTo(route)).subscribe(router.$next);
   const yellowButton = html`
     <button
       class="ripple"
@@ -34,7 +34,7 @@ const HNButton = Widget((context, { route, name }: HNButtonProps) => {
     <span
       style="${
         awaito(
-          router.routeObservable.pipe(
+          router.route$.pipe(
             map(path =>
               path.includes(route)
                 ? "--button-color: #f5d328"
@@ -46,8 +46,8 @@ const HNButton = Widget((context, { route, name }: HNButtonProps) => {
     >
       ${
         Button(context, {
-          eventObserver: s,
-          textObservable: just(name),
+          $event: s,
+          text$: just(name),
           raised: false
         })
       }
@@ -64,7 +64,7 @@ export const HNHeader = Widget(context => {
       ${HNButton(context, { route: "/jobs", name: "Jobs" })}
       ${SecretDemosButton(context)}
       ${
-        awaito(context.blocs.of(SecretCodeBloc).unlockedSubject, unlocked =>
+        awaito(context.blocs.of(SecretCodeBloc).$unlocked$, unlocked =>
           unlocked
             ? html`
                 <div
@@ -72,8 +72,8 @@ export const HNHeader = Widget(context => {
                 >
                   ${
                     Button(context, {
-                      textObservable: just("Clear storage"),
-                      eventObserver: {
+                      text$: just("Clear storage"),
+                      $event: {
                         next() {
                           localStorage.removeItem(localStorageKey);
                           window.location.reload();

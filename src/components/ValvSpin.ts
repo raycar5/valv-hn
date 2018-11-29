@@ -4,11 +4,11 @@ import { Subject } from "rxjs";
 import { ConfigBloc } from "../blocs/Config";
 
 export const ValvSpin = Widget(context => {
-  const animationSubject = new Subject();
+  const $animation$ = new Subject();
   let animation: Animation;
   return html`
           <div
-            @click="${eventToObserver(animationSubject)}"
+            @click="${eventToObserver($animation$)}"
             style="margin: 18px 1.5vh; color:#fff; display:inline-block"
             i="${interact(
               {
@@ -38,7 +38,7 @@ export const ValvSpin = Widget(context => {
                   }
                 }
               },
-              animationSubject
+              $animation$
             )}"
             >
             | Valv |

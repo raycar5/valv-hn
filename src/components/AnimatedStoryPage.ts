@@ -11,7 +11,7 @@ import { ConfigBloc } from "../blocs/Config";
 
 export interface StoryPageProps {
   page: HNStoryPage;
-  exitObservable: Observable<any>;
+  exit$: Observable<any>;
 }
 interface PanParams {
   dx: number;
@@ -21,7 +21,7 @@ function calculatePanPosition({ dx, y }: PanParams, top: number) {
   return dx * (1 - Math.abs(y - top + window.scrollY) / window.innerHeight);
 }
 export const AnimatedStoryPage = Widget(
-  (context, { page, exitObservable }: StoryPageProps) => {
+  (context, { page, exit$ }: StoryPageProps) => {
     let mc: HammerManager;
     const { areAnimationsSupported } = context.blocs.of(ConfigBloc);
     const panSubject = new Subject<PanParams>();
@@ -37,7 +37,7 @@ export const AnimatedStoryPage = Widget(
           return next;
         })
       )
-      .subscribe(context.blocs.of(RouterBloc).paginationDeltaObserver);
+      .subscribe(context.blocs.of(RouterBloc).$paginationDelta);
     return html`
       ${
         repeat(
@@ -182,7 +182,7 @@ export const AnimatedStoryPage = Widget(
 
                         if (wasAnimationPlaying) inAnimation.pause();
                         const shouldContinueFluidly =
-                          matrix.m41 < 1 && matrix.m41 > -1;
+                          matrix.m41 > 1 || matrix.m41 < -1;
 
                         if (areAnimationsSupported) {
                           element.animate(
@@ -213,19 +213,15 @@ export const AnimatedStoryPage = Widget(
                           if (index === page.stories.length - 1) {
                             // Finish listener wasn't working properly
                             setTimeout(() => {
-                              element.parentElement.parentElement.removeChild(
-                                element.parentElement
-                              );
+                              element.parentElement.remove();
                             }, 500 + index * 100);
                           }
                         } else {
-                          element.parentElement.parentElement.removeChild(
-                            element.parentElement
-                          );
+                          element.parentElement.remove();
                         }
                       }
                     },
-                    exitObservable.pipe(take(1))
+                    exit$.pipe(take(1))
                   )
                 }"
               >

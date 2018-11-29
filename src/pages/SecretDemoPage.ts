@@ -13,10 +13,10 @@ export const SecretDemoPage = Widget(context => {
         defer(async () => {
           const unlocked = await context.blocs
             .of(SecretCodeBloc)
-            .unlockedSubject.pipe(take(1))
+            .$unlocked$.pipe(take(1))
             .toPromise();
           if (!unlocked) {
-            context.blocs.of(RouterBloc).nextObserver.next("/");
+            context.blocs.of(RouterBloc).$next.next("/");
           }
         })
       )
