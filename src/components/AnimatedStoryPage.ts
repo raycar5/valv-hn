@@ -4,7 +4,7 @@ import { Widget, interact, RouterBloc, sleep } from "valv";
 import { html } from "lit-html";
 import { repeat } from "lit-html/directives/repeat";
 import { StoryListItem } from "./StoryListItem";
-import { take, delay, map, auditTime, filter } from "rxjs/operators";
+import { take, delay, map, filter } from "rxjs/operators";
 import { Manager, Pan, DIRECTION_HORIZONTAL } from "hammerjs";
 import { animationFrame } from "rxjs/internal/scheduler/animationFrame";
 import { ConfigBloc } from "../blocs/Config";
@@ -30,14 +30,18 @@ function left(width: number) {
   const w2 = width / 2;
   return -window.innerWidth - w2;
 }
-function calculatePanPosition({ dx, y }: PanParams, top: number) {
-  return dx * (1 - Math.abs(y - top + window.scrollY) / window.innerHeight);
+function calculatePanPosition(
+  { dx, y }: PanParams,
+  top: number,
+  height: number
+) {
+  return dx * (1 - Math.abs(y - top - height / 2) / window.innerHeight);
 }
 export const AnimatedStoryPage = Widget(
   (context, { page, exit$, enterSide }: StoryPageProps) => {
-    let mc: HammerManager;
     const { areAnimationsSupported } = context.blocs.of(ConfigBloc);
     const panSubject = new Subject<PanParams>();
+    const mcs: HammerManager[] = [];
     const panEndSubject = new Subject<PanParams>();
     const paginationSubject = new Subject<Number>();
 
@@ -67,8 +71,10 @@ export const AnimatedStoryPage = Widget(
                     next: ({ element }) => {
                       const {
                         width,
+                        height,
                         top
                       } = element.getBoundingClientRect() as DOMRect;
+                      const scrolledTop = top + window.scrollY;
                       const enterFn = enterSide === Side.RIGHT ? right : left;
                       if (areAnimationsSupported) {
                         inAnimation = element.animate(
@@ -116,7 +122,8 @@ export const AnimatedStoryPage = Widget(
                         element.style.visibility = "visible";
                         element.style.transform = `translateX(${calculatePanPosition(
                           panParams,
-                          top
+                          scrolledTop,
+                          height
                         )}px)`;
                         if (transitionEnabled) {
                           await sleep(200);
@@ -132,24 +139,23 @@ export const AnimatedStoryPage = Widget(
                         }, 100);
                       });
                       function onFinish() {
-                        inAnimation.removeEventListener("finish", onFinish);
-                        mc = new Manager(element, {
+                        const mc = new Manager(element, {
                           recognizers: [
                             [
                               Pan,
                               {
                                 direction: DIRECTION_HORIZONTAL,
-                                threshold: 5
+                                threshold: 2
                               }
                             ]
                           ]
                         });
+                        mcs.push(mc);
                         fromEvent<HammerInput>(mc, "panmove")
                           .pipe(
-                            auditTime(0, animationFrame),
                             map(e => ({
                               dx: e.deltaX,
-                              y: e.center.y
+                              y: (e.pointers[0] as PointerEvent).pageY
                             }))
                           )
                           .subscribe(panSubject);
@@ -173,7 +179,7 @@ export const AnimatedStoryPage = Widget(
                           .subscribe(panEndSubject);
                       }
                       if (areAnimationsSupported)
-                        inAnimation.addEventListener("finish", onFinish);
+                        setTimeout(onFinish, 500 + index * 100);
                     }
                   })
                 }"
@@ -190,7 +196,7 @@ export const AnimatedStoryPage = Widget(
                           areAnimationsSupported &&
                           inAnimation.playState === "running";
 
-                        if (mc) mc.destroy();
+                        for (const mc of mcs) mc.destroy();
 
                         if (wasAnimationPlaying) inAnimation.pause();
                         const shouldContinueFluidly =

@@ -7,7 +7,8 @@ import {
   map,
   debounceTime,
   withLatestFrom,
-  delay
+  delay,
+  tap
 } from "rxjs/operators";
 import { Spinner } from "./Spinner";
 import { AnimatedStoryPage, Side } from "./AnimatedStoryPage";
@@ -25,6 +26,11 @@ export const StoryList = Widget((context, { storyPage$ }: StoryListProps) => {
   storyPage$
     .pipe(
       filter(m => m.loadStatus === LoadStatus.LOADING),
+      tap(() => {
+        if (window.scroll) {
+          window.scroll({ top: 0, behavior: "smooth" });
+        }
+      }),
       withLatestFrom($previousPage$),
       map(([m, previousPage]) =>
         m.pageNumber >= previousPage ? Side.LEFT : Side.RIGHT
