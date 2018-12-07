@@ -65,13 +65,10 @@ interface FeedSelector {
   feed: HNFeed;
   page: number;
 }
-export interface HNStoryPage {
-  stories: HNStory[];
-  pageNumber: number;
-}
 export interface HNStoryPageMessage {
   loadStatus: LoadStatus;
-  page?: HNStoryPage;
+  stories?: HNStory[];
+  pageNumber: number;
 }
 export class HNBloc {
   public readonly feed$: Observable<HNStoryPageMessage>;
@@ -85,7 +82,8 @@ export class HNBloc {
 
   constructor() {
     const $feed$ = new BehaviorSubject<HNStoryPageMessage>({
-      loadStatus: LoadStatus.LOADING
+      loadStatus: LoadStatus.LOADING,
+      pageNumber: 1
     });
     //Setup
     this.feed$ = $feed$;
@@ -116,18 +114,19 @@ export class HNBloc {
             fetch(`https://node-hnapi.herokuapp.com/${f.feed}?page=${f.page}`)
               .then(async response => ({
                 loadStatus: LoadStatus.LOADED,
-                page: {
-                  stories: await response.json(),
-                  pageNumber: f.page
-                }
+                stories: await response.json(),
+                pageNumber: f.page
               }))
               .catch(error => {
                 console.error("error fetching story from hackernews api");
                 return Promise.resolve({
-                  loadStatus: LoadStatus.ERROR
+                  loadStatus: LoadStatus.ERROR,
+                  pageNumber: f.page
                 });
               })
-          ).pipe(startWith({ loadStatus: LoadStatus.LOADING }))
+          ).pipe(
+            startWith({ loadStatus: LoadStatus.LOADING, pageNumber: f.page })
+          )
         )
       )
       .subscribe($feed$);

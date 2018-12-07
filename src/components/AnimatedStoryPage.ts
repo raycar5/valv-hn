@@ -1,4 +1,4 @@
-import { HNStoryPage } from "../blocs/HN";
+import { HNStoryPageMessage } from "../blocs/HN";
 import { Observable, fromEvent, Subject, config } from "rxjs";
 import { Widget, interact, RouterBloc, sleep } from "valv";
 import { html } from "lit-html";
@@ -9,25 +9,38 @@ import { Manager, Pan, DIRECTION_HORIZONTAL } from "hammerjs";
 import { animationFrame } from "rxjs/internal/scheduler/animationFrame";
 import { ConfigBloc } from "../blocs/Config";
 
+export enum Side {
+  RIGHT,
+  LEFT
+}
 export interface StoryPageProps {
-  page: HNStoryPage;
-  exit$: Observable<any>;
+  page: HNStoryPageMessage;
+  exit$: Observable<Side>;
+  enterSide: Side;
 }
 interface PanParams {
   dx: number;
   y: number;
 }
+function right(width: number) {
+  const w2 = width / 2;
+  return window.innerWidth + w2;
+}
+function left(width: number) {
+  const w2 = width / 2;
+  return -window.innerWidth - w2;
+}
 function calculatePanPosition({ dx, y }: PanParams, top: number) {
   return dx * (1 - Math.abs(y - top + window.scrollY) / window.innerHeight);
 }
 export const AnimatedStoryPage = Widget(
-  (context, { page, exit$ }: StoryPageProps) => {
+  (context, { page, exit$, enterSide }: StoryPageProps) => {
     let mc: HammerManager;
     const { areAnimationsSupported } = context.blocs.of(ConfigBloc);
     const panSubject = new Subject<PanParams>();
     const panEndSubject = new Subject<PanParams>();
     const paginationSubject = new Subject<Number>();
-    let finished = false;
+
     paginationSubject
       .pipe(
         map(next => {
@@ -56,12 +69,12 @@ export const AnimatedStoryPage = Widget(
                         width,
                         top
                       } = element.getBoundingClientRect() as DOMRect;
+                      const enterFn = enterSide === Side.RIGHT ? right : left;
                       if (areAnimationsSupported) {
                         inAnimation = element.animate(
                           [
                             {
-                              transform: `translateX(100vw) translateX(${width /
-                                2}px)`,
+                              transform: `translateX(${enterFn(width)}px)`,
                               visibility: "visible"
                             },
                             {
@@ -120,7 +133,6 @@ export const AnimatedStoryPage = Widget(
                       });
                       function onFinish() {
                         inAnimation.removeEventListener("finish", onFinish);
-                        finished = true;
                         mc = new Manager(element, {
                           recognizers: [
                             [
@@ -168,7 +180,7 @@ export const AnimatedStoryPage = Widget(
                 i="${
                   interact<HTMLDivElement, any>(
                     {
-                      next({ element }) {
+                      next({ element, value: exitSide }) {
                         const style = window.getComputedStyle(element);
                         const { width } = element.getBoundingClientRect();
                         const matrix = new WebKitCSSMatrix(
@@ -185,6 +197,7 @@ export const AnimatedStoryPage = Widget(
                           matrix.m41 > 1 || matrix.m41 < -1;
 
                         if (areAnimationsSupported) {
+                          const exitfn = exitSide === Side.RIGHT ? right : left;
                           element.animate(
                             [
                               {
@@ -193,11 +206,7 @@ export const AnimatedStoryPage = Widget(
                                 )}px)`
                               },
                               {
-                                transform: `translateX(${-Math.max(
-                                  0,
-                                  matrix.m41
-                                ) -
-                                  width * 2}px)`
+                                transform: `translateX(${exitfn(width)}px)`
                               }
                             ] as Keyframe[],
                             {

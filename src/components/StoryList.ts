@@ -2,9 +2,15 @@ import { html, TemplateResult, render, noChange } from "lit-html";
 import { Observable, BehaviorSubject, Subject, NextObserver } from "rxjs";
 import { awaito, Widget, interact, just } from "valv";
 import { HNStoryPageMessage, LoadStatus } from "../blocs/HN";
-import { filter, map, debounceTime } from "rxjs/operators";
+import {
+  filter,
+  map,
+  debounceTime,
+  withLatestFrom,
+  delay
+} from "rxjs/operators";
 import { Spinner } from "./Spinner";
-import { AnimatedStoryPage } from "./AnimatedStoryPage";
+import { AnimatedStoryPage, Side } from "./AnimatedStoryPage";
 import { ConfigBloc } from "../blocs/Config";
 
 interface StoryListProps {
@@ -13,11 +19,25 @@ interface StoryListProps {
 
 export const StoryList = Widget((context, { storyPage$ }: StoryListProps) => {
   const { areAnimationsSupported } = context.blocs.of(ConfigBloc);
-  const exitSubject = new Subject();
+  const $exit$ = new Subject<Side>();
+  const $previousPage$ = new BehaviorSubject(1);
 
   storyPage$
-    .pipe(filter(m => m.loadStatus === LoadStatus.LOADING))
-    .subscribe(exitSubject);
+    .pipe(
+      filter(m => m.loadStatus === LoadStatus.LOADING),
+      withLatestFrom($previousPage$),
+      map(([m, previousPage]) =>
+        m.pageNumber >= previousPage ? Side.LEFT : Side.RIGHT
+      )
+    )
+    .subscribe($exit$);
+  storyPage$
+    .pipe(
+      filter(m => m.loadStatus === LoadStatus.LOADED),
+      delay(0),
+      map(m => m.pageNumber)
+    )
+    .subscribe($previousPage$);
 
   let loaderInAnimation: Animation;
   let loaderOutAnimation: Animation;
@@ -31,7 +51,7 @@ export const StoryList = Widget((context, { storyPage$ }: StoryListProps) => {
             i="${
               interact(
                 {
-                  next({ element, value }) {
+                  async next({ element, value }) {
                     const child = document.createElement("div");
                     child.style.position = "absolute";
                     element.appendChild(child);
@@ -40,10 +60,13 @@ export const StoryList = Widget((context, { storyPage$ }: StoryListProps) => {
                 },
                 storyPage$.pipe(
                   filter(m => m.loadStatus === LoadStatus.LOADED),
-                  map(m => ({
+                  withLatestFrom($previousPage$),
+                  map(([m, previousPage]) => ({
                     page: AnimatedStoryPage(context, {
-                      page: m.page,
-                      exit$: exitSubject
+                      page: m,
+                      exit$: $exit$,
+                      enterSide:
+                        m.pageNumber >= previousPage ? Side.RIGHT : Side.LEFT
                     })
                   }))
                 )
@@ -55,7 +78,7 @@ export const StoryList = Widget((context, { storyPage$ }: StoryListProps) => {
             i="${
               interact<HTMLDivElement, HNStoryPageMessage>(
                 {
-                  next({ element, value: { loadStatus, page } }) {
+                  next({ element, value: { loadStatus, stories } }) {
                     const inPlaying =
                       areAnimationsSupported &&
                       loaderInAnimation &&
@@ -66,7 +89,7 @@ export const StoryList = Widget((context, { storyPage$ }: StoryListProps) => {
                       loaderOutAnimation.playState === "running";
                     if (
                       loadStatus === LoadStatus.LOADED &&
-                      page.stories.length === 0
+                      stories.length === 0
                     ) {
                       loadStatus = LoadStatus.ERROR;
                     }
@@ -161,7 +184,7 @@ export const StoryList = Widget((context, { storyPage$ }: StoryListProps) => {
                       error :(
                     `;
                   case LoadStatus.LOADED:
-                    if (storyPageMessage.page.stories.length === 0) {
+                    if (storyPageMessage.stories.length === 0) {
                       return html`
                         <div
                           style="display: flex; justify-content: center; margin: 20px; align-items:center"
